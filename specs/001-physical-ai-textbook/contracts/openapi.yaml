@@ -1,0 +1,887 @@
+openapi: 3.1.0
+info:
+  title: Physical AI Textbook API
+  description: RAG Chatbot, Authentication, Personalization, and Translation APIs
+  version: 1.0.0
+  contact:
+    name: Physical AI Team
+
+servers:
+  - url: https://api.physicalairobotics.com/v1
+    description: Production
+  - url: http://localhost:8000/v1
+    description: Development
+
+tags:
+  - name: Chat
+    description: RAG Chatbot endpoints
+  - name: Auth
+    description: Authentication endpoints
+  - name: User
+    description: User profile and preferences
+  - name: Translation
+    description: Content translation endpoints
+
+paths:
+  # ============ CHAT ENDPOINTS ============
+  /chat:
+    post:
+      tags: [Chat]
+      summary: Send a chat message
+      description: Send a message and receive an AI-generated response based on book content
+      operationId: sendChatMessage
+      security:
+        - BearerAuth: []
+        - {}  # Allow anonymous
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /chat/stream:
+    post:
+      tags: [Chat]
+      summary: Send a chat message (streaming)
+      description: Send a message and receive a streaming response
+      operationId: sendChatMessageStream
+      security:
+        - BearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Streaming response
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-sent events with chat tokens
+
+  /chat/history:
+    get:
+      tags: [Chat]
+      summary: Get chat history
+      description: Retrieve conversation history for the current session
+      operationId: getChatHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: session_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Chat history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatHistoryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /chat/feedback:
+    post:
+      tags: [Chat]
+      summary: Submit feedback on a response
+      operationId: submitChatFeedback
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatFeedback'
+      responses:
+        '200':
+          description: Feedback recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============ AUTH ENDPOINTS ============
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Create a new account
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/signin:
+    post:
+      tags: [Auth]
+      summary: Sign in to existing account
+      operationId: signin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SigninRequest'
+      responses:
+        '200':
+          description: Signed in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/signout:
+    post:
+      tags: [Auth]
+      summary: Sign out and invalidate session
+      operationId: signout
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Signed out successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid refresh token
+
+  /auth/oauth/{provider}:
+    get:
+      tags: [Auth]
+      summary: Initiate OAuth flow
+      operationId: oauthStart
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [google, github]
+        - name: redirect_uri
+          in: query
+          schema:
+            type: string
+            format: uri
+      responses:
+        '302':
+          description: Redirect to OAuth provider
+
+  /auth/oauth/{provider}/callback:
+    get:
+      tags: [Auth]
+      summary: OAuth callback
+      operationId: oauthCallback
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [google, github]
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to application with tokens
+
+  # ============ USER ENDPOINTS ============
+  /user/profile:
+    get:
+      tags: [User]
+      summary: Get current user profile
+      operationId: getProfile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags: [User]
+      summary: Update user profile
+      operationId: updateProfile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdate'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /user/preferences:
+    get:
+      tags: [User]
+      summary: Get user preferences
+      operationId: getPreferences
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User preferences
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags: [User]
+      summary: Update user preferences
+      operationId: updatePreferences
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferences'
+      responses:
+        '200':
+          description: Preferences updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /user/questionnaire:
+    post:
+      tags: [User]
+      summary: Submit background questionnaire
+      operationId: submitQuestionnaire
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireSubmission'
+      responses:
+        '200':
+          description: Questionnaire submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /user/progress:
+    get:
+      tags: [User]
+      summary: Get reading progress
+      operationId: getProgress
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Reading progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadingProgress'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [User]
+      summary: Update reading progress
+      operationId: updateProgress
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgressUpdate'
+      responses:
+        '200':
+          description: Progress updated
+
+  # ============ TRANSLATION ENDPOINTS ============
+  /translate:
+    post:
+      tags: [Translation]
+      summary: Translate content
+      operationId: translateContent
+      security:
+        - BearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TranslationRequest'
+      responses:
+        '200':
+          description: Translation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationResponse'
+        '202':
+          description: Translation queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationQueued'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /translate/chapter/{chapter_number}:
+    get:
+      tags: [Translation]
+      summary: Get translated chapter
+      operationId: getTranslatedChapter
+      parameters:
+        - name: chapter_number
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 14
+        - name: language
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [ur]
+      responses:
+        '200':
+          description: Translated chapter content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslatedChapter'
+        '202':
+          description: Translation in progress
+        '404':
+          description: Chapter not found
+
+  /translate/status/{job_id}:
+    get:
+      tags: [Translation]
+      summary: Check translation job status
+      operationId: getTranslationStatus
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationJobStatus'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # ---- Chat Schemas ----
+    ChatRequest:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        session_id:
+          type: string
+          format: uuid
+        chapter_context:
+          type: integer
+          minimum: 1
+          maximum: 14
+        section_id:
+          type: string
+
+    ChatResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        session_id:
+          type: string
+          format: uuid
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatSource'
+        model:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ChatSource:
+      type: object
+      properties:
+        chunk_id:
+          type: string
+        chapter_number:
+          type: integer
+        section_title:
+          type: string
+        relevance_score:
+          type: number
+          format: float
+        text_preview:
+          type: string
+
+    ChatHistoryResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+        total:
+          type: integer
+        has_more:
+          type: boolean
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        chapter_context:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    ChatFeedback:
+      type: object
+      required: [message_id, rating]
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        feedback_text:
+          type: string
+          maxLength: 1000
+
+    # ---- Auth Schemas ----
+    SignupRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+
+    SigninRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          default: bearer
+        expires_in:
+          type: integer
+        user:
+          $ref: '#/components/schemas/UserProfile'
+
+    # ---- User Schemas ----
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+
+    UserPreferences:
+      type: object
+      properties:
+        experience_level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        programming_langs:
+          type: array
+          items:
+            type: string
+        robotics_experience:
+          type: boolean
+        hardware_available:
+          type: array
+          items:
+            type: string
+        learning_goals:
+          type: array
+          items:
+            type: string
+        preferred_language:
+          type: string
+          enum: [en, ur]
+        theme:
+          type: string
+          enum: [light, dark, system]
+        font_size:
+          type: string
+          enum: [small, medium, large]
+
+    QuestionnaireSubmission:
+      type: object
+      required: [experience_level]
+      properties:
+        experience_level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        programming_langs:
+          type: array
+          items:
+            type: string
+        robotics_experience:
+          type: boolean
+        hardware_available:
+          type: array
+          items:
+            type: string
+        learning_goals:
+          type: array
+          items:
+            type: string
+
+    ReadingProgress:
+      type: object
+      properties:
+        current_chapter:
+          type: integer
+        completed_chapters:
+          type: array
+          items:
+            type: integer
+        completion_percentage:
+          type: number
+          format: float
+        bookmarks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Bookmark'
+        last_read_at:
+          type: string
+          format: date-time
+
+    Bookmark:
+      type: object
+      properties:
+        chapter:
+          type: integer
+        section:
+          type: string
+        note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ProgressUpdate:
+      type: object
+      properties:
+        chapter_completed:
+          type: integer
+          minimum: 1
+          maximum: 14
+        current_chapter:
+          type: integer
+          minimum: 1
+          maximum: 14
+        bookmark:
+          $ref: '#/components/schemas/Bookmark'
+
+    # ---- Translation Schemas ----
+    TranslationRequest:
+      type: object
+      required: [text, target_language]
+      properties:
+        text:
+          type: string
+          maxLength: 10000
+        target_language:
+          type: string
+          enum: [ur]
+        content_type:
+          type: string
+          enum: [chapter, section, ui, code_comment]
+        chapter_number:
+          type: integer
+
+    TranslationResponse:
+      type: object
+      properties:
+        translated_text:
+          type: string
+        source_language:
+          type: string
+        target_language:
+          type: string
+        cached:
+          type: boolean
+
+    TranslationQueued:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued]
+        estimated_wait:
+          type: integer
+          description: Estimated wait time in seconds
+
+    TranslatedChapter:
+      type: object
+      properties:
+        chapter_number:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        language:
+          type: string
+        translation_quality:
+          type: number
+          format: float
+        last_updated:
+          type: string
+          format: date-time
+
+    TranslationJobStatus:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        progress:
+          type: number
+          format: float
+        result:
+          $ref: '#/components/schemas/TranslationResponse'
+        error:
+          type: string
+
+    # ---- Common Schemas ----
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    RateLimited:
+      description: Too many requests
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

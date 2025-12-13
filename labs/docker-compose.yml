@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  ros2-dev:
+    image: osrf/ros:humble-desktop
+    container_name: physical-ai-ros2-dev
+    privileged: true
+    network_mode: host
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - ROS_DOMAIN_ID=0
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./:/workspace:rw
+      - ~/.ros:/root/.ros:rw
+    working_dir: /workspace
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+
+  gazebo:
+    image: osrf/ros:humble-desktop
+    container_name: physical-ai-gazebo
+    privileged: true
+    network_mode: host
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - ROS_DOMAIN_ID=0
+      - GAZEBO_MASTER_URI=http://localhost:11345
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./:/workspace:rw
+    working_dir: /workspace
+    command: gz sim -r empty.sdf
+    depends_on:
+      - ros2-dev
