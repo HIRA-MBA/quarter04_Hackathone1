@@ -17,6 +17,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app.services.rag.ingestion import BookIngester
 from app.services.rag.embeddings import get_embeddings_service
+from app.db.qdrant import get_qdrant_client, get_collection_name
+from qdrant_client.models import Distance, VectorParams
 
 
 def main():
@@ -71,7 +73,7 @@ def main():
         print(f"Error: Docs path does not exist: {docs_path}")
         sys.exit(1)
 
-    print(f"📚 Book Ingestion Tool")
+    print(f"Book Ingestion Tool")
     print(f"   Docs path: {docs_path}")
     print(f"   Chunk size: {args.chunk_size}")
     print(f"   Chunk overlap: {args.chunk_overlap}")
@@ -87,12 +89,12 @@ def main():
     # Show stats
     if args.stats_only:
         stats = ingester.get_stats()
-        print(f"📊 Ingestion Statistics:")
+        print(f"Ingestion Statistics:")
         print(f"   Total files: {stats['total_files']}")
         print(f"   Total chunks: {stats['total_chunks']}")
         print(f"   Total characters: {stats['total_characters']:,}")
         print()
-        print("📑 Chapters:")
+        print("Chapters:")
         for ch in stats["chapters"]:
             print(f"   - {ch['chapter']}: {ch['chunks']} chunks")
         return
@@ -100,9 +102,23 @@ def main():
     # Get embeddings service
     embeddings_service = get_embeddings_service()
 
+    # Ensure collection exists
+    client = get_qdrant_client()
+    collection_name = get_collection_name()
+    collections = client.get_collections().collections
+    if not any(c.name == collection_name for c in collections):
+        print(f"Creating collection: {collection_name}")
+        client.create_collection(
+            collection_name=collection_name,
+            vectors_config=VectorParams(
+                size=1536,  # text-embedding-3-small dimension
+                distance=Distance.COSINE,
+            ),
+        )
+
     # Show current collection stats
     collection_stats = embeddings_service.get_collection_stats()
-    print(f"🗄️  Vector Collection: {collection_stats.get('collection_name', 'unknown')}")
+    print(f"Vector Collection: {collection_stats.get('collection_name', 'unknown')}")
     if "error" not in collection_stats:
         print(f"   Current vectors: {collection_stats.get('vectors_count', 0)}")
     print()
@@ -120,27 +136,27 @@ def main():
             print(f"Error: Chapter not found: {args.chapter}")
             sys.exit(1)
 
-        print(f"📖 Ingesting chapter: {args.chapter}")
+        print(f"Ingesting chapter: {args.chapter}")
         chunks = list(ingester.ingest_file(chapter_file))
     else:
-        print(f"📖 Ingesting all chapters...")
+        print(f"Ingesting all chapters...")
         chunks = list(ingester.ingest_all())
 
     print(f"   Found {len(chunks)} chunks")
     print()
 
     if args.dry_run:
-        print("🔍 Dry run - showing sample chunks:")
+        print("Dry run - showing sample chunks:")
         for i, chunk in enumerate(chunks[:3]):
             print(f"\n--- Chunk {i + 1} ---")
             print(f"Chapter: {chunk.chapter}")
             print(f"Section: {chunk.section}")
             print(f"Content preview: {chunk.content[:200]}...")
-        print("\n✅ Dry run complete. No data uploaded.")
+        print("\nDry run complete. No data uploaded.")
         return
 
     # Upload to vector database
-    print(f"⬆️  Uploading to vector database (batch size: {args.batch_size})...")
+    print(f"Uploading to vector database (batch size: {args.batch_size})...")
 
     try:
         total_uploaded = embeddings_service.upsert_chunks(
@@ -149,13 +165,13 @@ def main():
         )
         print(f"   Uploaded {total_uploaded} vectors")
     except Exception as e:
-        print(f"❌ Error uploading: {e}")
+        print(f"Error uploading: {e}")
         sys.exit(1)
 
     # Show final stats
     final_stats = embeddings_service.get_collection_stats()
     print()
-    print(f"✅ Ingestion complete!")
+    print(f"Ingestion complete!")
     print(f"   Total vectors in collection: {final_stats.get('vectors_count', 'unknown')}")
 
 

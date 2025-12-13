@@ -13,6 +13,7 @@ def get_qdrant_client() -> QdrantClient:
     return QdrantClient(
         url=settings.qdrant_url,
         api_key=settings.qdrant_api_key if settings.qdrant_api_key else None,
+        timeout=120,  # Increased timeout for cloud connections
     )
 
 

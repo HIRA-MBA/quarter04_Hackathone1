@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.api.routes import auth, chat, translation, user
+from app.api.routes import admin, auth, chat, translation, user
 
 
 @asynccontextmanager
@@ -56,6 +56,7 @@ def create_app() -> FastAPI:
         }
 
     # Include API routes
+    app.include_router(admin.router, prefix="/api")
     app.include_router(auth.router, prefix="/api")
     app.include_router(chat.router, prefix="/api")
     app.include_router(user.router, prefix="/api")

@@ -75,10 +75,13 @@ class EmbeddingsService:
 
     def upsert_chunks(self, chunks: list[TextChunk], batch_size: int = 100) -> int:
         """Upsert text chunks with their embeddings into Qdrant."""
+        import time
         total_upserted = 0
+        total_batches = (len(chunks) + batch_size - 1) // batch_size
 
-        for i in range(0, len(chunks), batch_size):
+        for batch_num, i in enumerate(range(0, len(chunks), batch_size), 1):
             batch = chunks[i : i + batch_size]
+            print(f"   Processing batch {batch_num}/{total_batches} ({len(batch)} chunks)...")
 
             # Generate embeddings for batch
             texts = [chunk.content for chunk in batch]
@@ -101,11 +104,22 @@ class EmbeddingsService:
                 for chunk, embedding in zip(batch, embeddings)
             ]
 
-            # Upsert to Qdrant
-            self.qdrant_client.upsert(
-                collection_name=self.collection_name,
-                points=points,
-            )
+            # Upsert to Qdrant with retry
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    self.qdrant_client.upsert(
+                        collection_name=self.collection_name,
+                        points=points,
+                    )
+                    break
+                except Exception as e:
+                    if attempt < max_retries - 1:
+                        print(f"   Retry {attempt + 1}/{max_retries} after error: {e}")
+                        time.sleep(2 ** attempt)  # Exponential backoff
+                    else:
+                        raise
+
             total_upserted += len(points)
 
         return total_upserted

@@ -14,6 +14,10 @@ RUN pip install --no-cache-dir -e .
 # Copy application code
 COPY . .
 
+# Copy docs folder for ingestion (should be copied to backend/docs before build)
+# Or mount as volume in production
+COPY docs /app/docs
+
 # Expose port
 EXPOSE 8000
 
