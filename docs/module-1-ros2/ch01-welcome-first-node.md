@@ -458,7 +458,7 @@ This opens a GUI showing all nodes and their topic connections—invaluable for 
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-1/ch01-hello-robot/`](/labs/module-1/ch01-hello-robot/) where you will:
+Complete the hands-on lab in [`labs/module-1/ch01-hello-robot/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-1/ch01-hello-robot) where you will:
 
 1. Create a custom message type for robot status
 2. Build a node that publishes simulated sensor data

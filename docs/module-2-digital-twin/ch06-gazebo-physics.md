@@ -992,7 +992,7 @@ ros2 bag play simulation_test
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-2/ch06-gazebo-world/`](/labs/module-2/ch06-gazebo-world/) where you will:
+Complete the hands-on lab in [`labs/module-2/ch06-gazebo-world/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-2/ch06-gazebo-world) where you will:
 
 1. Create a custom world with obstacles and terrain
 2. Add your humanoid robot model with sensors

@@ -1183,7 +1183,7 @@ class Sim2RealEvaluator:
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-3/ch10-sim2real/`](/labs/module-3/ch10-sim2real/) where you will:
+Complete the hands-on lab in [`labs/module-3/ch10-sim2real/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-3/ch10-sim2real) where you will:
 
 1. Configure Nav2 for a simulated robot in Gazebo
 2. Train a navigation RL policy in Isaac Sim

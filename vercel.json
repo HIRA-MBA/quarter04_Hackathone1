@@ -48,8 +48,13 @@
   "redirects": [
     {
       "source": "/docs",
-      "destination": "/front-matter/introduction",
+      "destination": "/introduction",
       "permanent": false
+    },
+    {
+      "source": "/docs/intro",
+      "destination": "/introduction",
+      "permanent": true
     }
   ]
 }

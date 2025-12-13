@@ -1140,7 +1140,7 @@ class HumanoidLocomotionEnv:
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-4/ch11-walking/`](/labs/module-4/ch11-walking/) where you will:
+Complete the hands-on lab in [`labs/module-4/ch11-walking/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-4/ch11-walking) where you will:
 
 1. Implement the Linear Inverted Pendulum Model
 2. Generate ZMP reference trajectories for walking

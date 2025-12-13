@@ -28,3 +28,170 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* ========================================
+   Urdu Language (RTL) Support
+   ======================================== */
+
+/* RTL layout adjustments */
+[dir='rtl'] {
+  --ifm-font-family-base: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif,
+    system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans,
+    sans-serif;
+  text-align: right;
+}
+
+/* Urdu-specific font styling */
+[lang='ur'],
+.urdu-text {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+  line-height: 2;
+  font-size: 1.1em;
+}
+
+/* Keep code blocks LTR even in RTL mode */
+[dir='rtl'] pre,
+[dir='rtl'] code,
+[dir='rtl'] .prism-code {
+  direction: ltr;
+  text-align: left;
+}
+
+/* RTL navbar adjustments */
+[dir='rtl'] .navbar__items {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .navbar__brand {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+
+/* RTL sidebar adjustments */
+[dir='rtl'] .menu__link {
+  padding-right: var(--ifm-menu-link-padding-horizontal);
+  padding-left: var(--ifm-menu-link-padding-horizontal);
+}
+
+[dir='rtl'] .menu__list-item-collapsible .menu__link {
+  padding-right: 0;
+}
+
+[dir='rtl'] .menu__caret {
+  transform: rotate(180deg);
+}
+
+[dir='rtl'] .menu__list-item-collapsible--active .menu__caret {
+  transform: rotate(270deg);
+}
+
+/* RTL table of contents */
+[dir='rtl'] .table-of-contents {
+  padding-right: 0;
+  padding-left: 0.5rem;
+  border-right: none;
+  border-left: 1px solid var(--ifm-color-emphasis-300);
+}
+
+[dir='rtl'] .table-of-contents__link::before {
+  content: '';
+}
+
+/* RTL breadcrumbs */
+[dir='rtl'] .breadcrumbs__item:not(:last-child)::after {
+  content: '\\';
+  margin: 0 0.5rem;
+}
+
+/* RTL pagination */
+[dir='rtl'] .pagination-nav__link--prev .pagination-nav__label::before {
+  content: ' →';
+}
+
+[dir='rtl'] .pagination-nav__link--next .pagination-nav__label::after {
+  content: '← ';
+}
+
+/* RTL lists */
+[dir='rtl'] ul,
+[dir='rtl'] ol {
+  padding-right: 2rem;
+  padding-left: 0;
+}
+
+/* RTL blockquotes */
+[dir='rtl'] blockquote {
+  border-right: 4px solid var(--ifm-color-emphasis-300);
+  border-left: none;
+  padding-right: 1rem;
+  padding-left: 0;
+}
+
+/* RTL admonitions */
+[dir='rtl'] .admonition {
+  border-right: 5px solid;
+  border-left: none;
+}
+
+/* RTL search */
+[dir='rtl'] .DocSearch-Button-Keys,
+[dir='rtl'] .DocSearch-Button-Placeholder {
+  direction: ltr;
+}
+
+/* ========================================
+   Authentication Pages
+   ======================================== */
+
+.auth-page-container {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* ========================================
+   Personalization Components
+   ======================================== */
+
+/* Experience level badges */
+.experience-badge {
+  display: inline-flex;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.experience-badge--beginner {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.experience-badge--intermediate {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.experience-badge--advanced {
+  background: #fce4ec;
+  color: #c2185b;
+}
+
+[data-theme='dark'] .experience-badge--beginner {
+  background: rgba(46, 125, 50, 0.2);
+  color: #a5d6a7;
+}
+
+[data-theme='dark'] .experience-badge--intermediate {
+  background: rgba(230, 81, 0, 0.2);
+  color: #ffcc80;
+}
+
+[data-theme='dark'] .experience-badge--advanced {
+  background: rgba(194, 24, 91, 0.2);
+  color: #f48fb1;
+}

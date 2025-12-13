@@ -11,7 +11,7 @@ export default function ChatInput({
   onSend,
   disabled = false,
   placeholder = 'Ask a question about the textbook...',
-}: ChatInputProps): JSX.Element {
+}: ChatInputProps): React.ReactElement {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 

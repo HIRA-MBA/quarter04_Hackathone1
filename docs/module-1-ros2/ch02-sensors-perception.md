@@ -713,7 +713,7 @@ def calibrate_imu_bias(samples: list) -> dict:
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-1/ch02-sensor-fusion/`](/labs/module-1/ch02-sensor-fusion/) where you will:
+Complete the hands-on lab in [`labs/module-1/ch02-sensor-fusion/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-1/ch02-sensor-fusion) where you will:
 
 1. Configure and launch a USB camera or simulated camera
 2. Implement a LIDAR-based obstacle detection node

@@ -1237,7 +1237,7 @@ def main(args=None):
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-4/ch12-manipulation/`](/labs/module-4/ch12-manipulation/) where you will:
+Complete the hands-on lab in [`labs/module-4/ch12-manipulation/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-4/ch12-manipulation) where you will:
 
 1. Implement forward kinematics for a 3-finger hand
 2. Sample and evaluate grasp candidates on a test object

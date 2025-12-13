@@ -813,7 +813,7 @@ if __name__ == '__main__':
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-3/ch09-gpu-vision/`](/labs/module-3/ch09-gpu-vision/) where you will:
+Complete the hands-on lab in [`labs/module-3/ch09-gpu-vision/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-3/ch09-gpu-vision) where you will:
 
 1. Set up Isaac ROS development environment
 2. Configure GPU-accelerated image rectification

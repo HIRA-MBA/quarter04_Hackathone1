@@ -1084,7 +1084,7 @@ class VLAEvaluator:
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-4/ch13-vla-commands/`](/labs/module-4/ch13-vla-commands/) where you will:
+Complete the hands-on lab in [`labs/module-4/ch13-vla-commands/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-4/ch13-vla-commands) where you will:
 
 1. Set up a pretrained VLA model (OpenVLA or Octo)
 2. Process multimodal inputs (images + language)

@@ -1,0 +1,310 @@
+/**
+ * Authentication pages styles.
+ */
+
+.authContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 200px);
+  padding: 2rem;
+}
+
+.authCard {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.authCard h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  text-align: center;
+}
+
+.subtitle {
+  color: var(--ifm-color-emphasis-600);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 3px var(--ifm-color-primary-lighter);
+}
+
+.formGroup textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.forgotPassword {
+  text-align: right;
+  margin-top: -0.5rem;
+}
+
+.forgotPassword a {
+  font-size: 0.875rem;
+  color: var(--ifm-color-primary);
+}
+
+.submitButton {
+  background: var(--ifm-color-primary);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 0.5rem;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--ifm-color-primary-dark);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  background: var(--ifm-color-danger-lightest);
+  color: var(--ifm-color-danger-darkest);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--ifm-color-danger-light);
+}
+
+.success {
+  background: var(--ifm-color-success-lightest);
+  color: var(--ifm-color-success-darkest);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--ifm-color-success-light);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  gap: 1rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ifm-color-emphasis-300);
+}
+
+.divider span {
+  color: var(--ifm-color-emphasis-500);
+  font-size: 0.85rem;
+}
+
+.oauthButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.oauthButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.oauthButton:hover {
+  background: var(--ifm-color-emphasis-100);
+  border-color: var(--ifm-color-emphasis-400);
+  text-decoration: none;
+  color: var(--ifm-font-color-base);
+}
+
+.switchAuth {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.switchAuth a {
+  color: var(--ifm-color-primary);
+  font-weight: 500;
+}
+
+/* Questionnaire specific styles */
+.stepIndicator {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.step {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ifm-color-emphasis-300);
+  transition: background 0.2s;
+}
+
+.step.active {
+  background: var(--ifm-color-primary);
+}
+
+.step.completed {
+  background: var(--ifm-color-success);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.optionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  background: var(--ifm-background-color);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: left;
+}
+
+.optionButton:hover {
+  border-color: var(--ifm-color-primary-light);
+  background: var(--ifm-color-primary-lightest);
+}
+
+.optionButton.selected {
+  border-color: var(--ifm-color-primary);
+  background: var(--ifm-color-primary-lightest);
+}
+
+.optionContent {
+  flex: 1;
+}
+
+.optionContent strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.optionContent span {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.navigationButtons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.backButton {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.backButton:hover {
+  background: var(--ifm-color-emphasis-100);
+}
+
+.nextButton {
+  flex: 2;
+}
+
+/* RTL support for Urdu */
+[dir='rtl'] .authCard {
+  text-align: right;
+}
+
+[dir='rtl'] .formGroup label {
+  text-align: right;
+}
+
+[dir='rtl'] .forgotPassword {
+  text-align: left;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .authCard {
+    padding: 1.5rem;
+  }
+
+  .oauthButtons {
+    flex-direction: column;
+  }
+}

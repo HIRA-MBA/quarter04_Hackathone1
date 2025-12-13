@@ -1,0 +1,102 @@
+/**
+ * Urdu toggle component styles.
+ */
+
+.container {
+  display: inline-flex;
+  align-items: center;
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  color: var(--ifm-font-color-base);
+}
+
+.toggleButton:hover:not(:disabled) {
+  background: var(--ifm-color-emphasis-100);
+  border-color: var(--ifm-color-primary);
+}
+
+.toggleButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggleButton.urduActive {
+  background: var(--ifm-color-primary-lightest);
+  border-color: var(--ifm-color-primary);
+}
+
+.languageIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.languageText {
+  font-weight: 500;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Urdu text styling */
+.toggleButton.urduActive .languageText {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+}
+
+.loading {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-top-color: var(--ifm-color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Navbar integration */
+:global(.navbar__item) .container {
+  margin-left: 0.5rem;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .toggleButton {
+  background: var(--ifm-background-surface-color);
+  border-color: var(--ifm-color-emphasis-400);
+}
+
+[data-theme='dark'] .toggleButton:hover:not(:disabled) {
+  background: var(--ifm-color-emphasis-200);
+}
+
+/* RTL support when Urdu is active */
+[dir='rtl'] .toggleButton {
+  flex-direction: row-reverse;
+}
+
+/* Mobile responsive */
+@media (max-width: 996px) {
+  .toggleButton {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  .languageIcon svg {
+    width: 16px;
+    height: 16px;
+  }
+}

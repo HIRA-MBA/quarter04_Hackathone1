@@ -948,7 +948,7 @@ self.create_subscription(Twist, '/cmd_vel', callback, command_qos)
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-1/ch03-ros2-deep-dive/`](/labs/module-1/ch03-ros2-deep-dive/) where you will:
+Complete the hands-on lab in [`labs/module-1/ch03-ros2-deep-dive/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-1/ch03-ros2-deep-dive) where you will:
 
 1. Create a lifecycle node that manages a simulated motor controller
 2. Implement a service for computing inverse kinematics

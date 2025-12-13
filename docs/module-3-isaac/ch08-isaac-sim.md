@@ -754,7 +754,7 @@ distractors = rep.create.from_usd(
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-3/ch08-isaac-scene/`](/labs/module-3/ch08-isaac-scene/) where you will:
+Complete the hands-on lab in [`labs/module-3/ch08-isaac-scene/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-3/ch08-isaac-scene) where you will:
 
 1. Create a warehouse environment in Isaac Sim
 2. Import your humanoid robot from URDF

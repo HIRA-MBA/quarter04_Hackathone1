@@ -10,7 +10,7 @@ class TranslationCache(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "translation_cache"
 
     # Source identification
-    source_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    content_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     source_language: Mapped[str] = mapped_column(String(10))
     target_language: Mapped[str] = mapped_column(String(10))
 
@@ -19,8 +19,11 @@ class TranslationCache(Base, UUIDMixin, TimestampMixin):
     translated_text: Mapped[str] = mapped_column(Text)
 
     # Metadata
-    chapter: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    chapter_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     section: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    # Status for async processing
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, completed, failed
 
     # Quality
     is_reviewed: Mapped[bool] = mapped_column(default=False)

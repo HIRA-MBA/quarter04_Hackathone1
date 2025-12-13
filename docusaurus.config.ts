@@ -7,6 +7,32 @@ const config: Config = {
   tagline: 'Embodied Intelligence: From ROS 2 to Vision-Language-Action Models',
   favicon: 'img/favicon.ico',
 
+  // Custom head tags for Urdu font support
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossorigin: 'anonymous',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap',
+      },
+    },
+  ],
+
   future: {
     v4: true,
   },

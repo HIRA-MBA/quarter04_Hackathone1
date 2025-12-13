@@ -389,7 +389,7 @@ Choose one of these demonstration scenarios:
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-4/ch14-capstone/`](/labs/module-4/ch14-capstone/) where you will:
+Complete the hands-on lab in [`labs/module-4/ch14-capstone/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-4/ch14-capstone) where you will:
 
 1. Integrate all subsystems into a unified system
 2. Implement behavior trees for task execution

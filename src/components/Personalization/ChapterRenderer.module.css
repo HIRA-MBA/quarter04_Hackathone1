@@ -1,0 +1,272 @@
+/**
+ * ChapterRenderer component styles.
+ */
+
+.chapterWrapper {
+  position: relative;
+}
+
+.metadataBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.metadataLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.metadataRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.difficultyBadge {
+  display: inline-flex;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estimatedTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.875rem;
+}
+
+.estimatedTime svg {
+  opacity: 0.7;
+}
+
+/* Progress indicator */
+.progressContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 100px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 4px;
+  background: var(--ifm-color-primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 0.75rem;
+  color: var(--ifm-color-emphasis-600);
+  min-width: 32px;
+}
+
+/* Match banner */
+.matchBanner {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.matchBanner.good {
+  background: #e8f5e9;
+  color: #1b5e20;
+  border-left: 4px solid #4caf50;
+}
+
+.matchBanner.stretch {
+  background: #fff3e0;
+  color: #e65100;
+  border-left: 4px solid #ff9800;
+}
+
+.matchBanner.review {
+  background: #e3f2fd;
+  color: #0d47a1;
+  border-left: 4px solid #2196f3;
+}
+
+.matchBanner strong {
+  margin-right: 0.5rem;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .matchBanner.good {
+  background: rgba(76, 175, 80, 0.15);
+  color: #a5d6a7;
+}
+
+[data-theme='dark'] .matchBanner.stretch {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ffcc80;
+}
+
+[data-theme='dark'] .matchBanner.review {
+  background: rgba(33, 150, 243, 0.15);
+  color: #90caf9;
+}
+
+/* Chapter content */
+.chapterContent {
+  /* Main content area */
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  right: 20px;
+  top: 120px;
+  width: 240px;
+  padding: 1rem;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.sidebar h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--ifm-color-emphasis-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.recommendationList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+
+.recommendationList li {
+  margin-bottom: 0.75rem;
+}
+
+.recommendationList a {
+  display: block;
+  padding: 0.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.recommendationList a:hover {
+  background: var(--ifm-color-emphasis-100);
+}
+
+.recommendationList strong {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--ifm-font-color-base);
+  margin-bottom: 0.25rem;
+}
+
+.recommendationList span {
+  font-size: 0.75rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+/* Progress circle */
+.overallProgress {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.overallProgress h4 {
+  margin-bottom: 1rem;
+}
+
+.progressCircle {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 0.5rem;
+}
+
+.progressCircle svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progressCircleBg {
+  fill: none;
+  stroke: var(--ifm-color-emphasis-200);
+  stroke-width: 3;
+}
+
+.progressCircleFill {
+  fill: none;
+  stroke: var(--ifm-color-primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.5s ease;
+}
+
+.progressCircle span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ifm-color-primary);
+}
+
+.overallProgress p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+/* Hide sidebar on smaller screens */
+@media (max-width: 1400px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+/* RTL support */
+[dir='rtl'] .metadataBar {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .metadataLeft,
+[dir='rtl'] .metadataRight {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .matchBanner {
+  border-left: none;
+  border-right: 4px solid;
+}
+
+[dir='rtl'] .matchBanner.good {
+  border-right-color: #4caf50;
+}
+
+[dir='rtl'] .matchBanner.stretch {
+  border-right-color: #ff9800;
+}
+
+[dir='rtl'] .matchBanner.review {
+  border-right-color: #2196f3;
+}
+
+[dir='rtl'] .sidebar {
+  right: auto;
+  left: 20px;
+}

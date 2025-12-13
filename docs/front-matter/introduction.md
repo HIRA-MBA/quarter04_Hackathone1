@@ -49,4 +49,4 @@ The journey is challenging but rewarding. Let's begin.
 
 ---
 
-*Continue to [Hardware & Lab Setup](./hardware-lab-setup).*
+*Continue to [Hardware & Lab Setup](/front-matter/hardware-lab-setup).*

@@ -19,7 +19,7 @@ export interface ChatBotProps {
 export default function ChatBot({
   chapter,
   defaultOpen = false,
-}: ChatBotProps): JSX.Element {
+}: ChatBotProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);

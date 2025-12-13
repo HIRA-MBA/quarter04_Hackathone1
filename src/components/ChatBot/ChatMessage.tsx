@@ -16,7 +16,7 @@ export default function ChatMessage({
   content,
   sources,
   isLoading,
-}: ChatMessageProps): JSX.Element {
+}: ChatMessageProps): React.ReactElement {
   return (
     <div className={`${styles.message} ${styles[role]}`}>
       <div className={styles.messageAvatar}>

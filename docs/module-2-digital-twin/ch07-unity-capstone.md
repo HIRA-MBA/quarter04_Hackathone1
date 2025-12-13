@@ -1018,7 +1018,7 @@ graph TB
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-2/ch07-unity-twin/`](/labs/module-2/ch07-unity-twin/) where you will:
+Complete the hands-on lab in [`labs/module-2/ch07-unity-twin/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-2/ch07-unity-twin) where you will:
 
 1. Set up a Unity project with ROS-TCP-Connector
 2. Import your humanoid robot URDF

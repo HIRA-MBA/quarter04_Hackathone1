@@ -874,7 +874,7 @@ if __name__ == '__main__':
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-1/ch04-urdf-humanoid/`](/labs/module-1/ch04-urdf-humanoid/) where you will:
+Complete the hands-on lab in [`labs/module-1/ch04-urdf-humanoid/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-1/ch04-urdf-humanoid) where you will:
 
 1. Create a URDF for a simple robot arm with 3 joints
 2. Convert it to Xacro with parameterized macros

@@ -915,7 +915,7 @@ graph TB
 
 ## Lab Exercise
 
-Complete the hands-on lab in [`labs/module-1/ch05-edge-controller/`](/labs/module-1/ch05-edge-controller/) where you will:
+Complete the hands-on lab in [`labs/module-1/ch05-edge-controller/`](https://github.com/physical-ai-textbook/physical-ai-textbook/tree/main/labs/module-1/ch05-edge-controller) where you will:
 
 1. Set up cross-compilation environment for ARM64
 2. Build and deploy a Docker image to edge hardware

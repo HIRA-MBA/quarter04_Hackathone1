@@ -6,7 +6,7 @@ interface RootProps {
 }
 
 // This wrapper adds the ChatBot to all pages
-export default function Root({ children }: RootProps): JSX.Element {
+export default function Root({ children }: RootProps): React.ReactElement {
   return (
     <>
       {children}
