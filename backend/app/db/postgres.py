@@ -23,7 +23,7 @@ def get_session_maker() -> async_sessionmaker[AsyncSession]:
     )
 
 
-async def get_db() -> AsyncSession:
+async def get_db_session() -> AsyncSession:
     """Dependency for getting database sessions."""
     session_maker = get_session_maker()
     async with session_maker() as session:
