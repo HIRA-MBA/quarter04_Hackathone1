@@ -16,7 +16,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.postgres import get_db
+from app.db.postgres import get_db_session
+
 from app.services.rag.chat import get_chat_service, ChatService
 from app.services.rag.embeddings import get_embeddings_service, EmbeddingsService
 
@@ -170,7 +171,7 @@ async def clear_session(
 @router.post("/feedback")
 async def submit_feedback(
     request: FeedbackRequest,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_db_session())],
 ):
     """
     Submit feedback for a chat response.
@@ -195,19 +196,16 @@ async def get_stats(
     stats = embeddings_service.get_collection_stats()
     return CollectionStatsResponse(**stats)
 
-
 @router.get("/search")
 async def search_content(
     q: Annotated[str, Query(..., min_length=1, max_length=500, description="Search query")],
-    limit: Annotated[int, Query(default=5, ge=1, le=20)] = 5,
-    chapter: Annotated[str | None, Query(default=None)] = None,
-    embeddings_service: Annotated[EmbeddingsService, Depends(get_embeddings_svc)] = None,
+    limit: int = Query(5, ge=1, le=20),
+    chapter: str | None = Query(None),
+    embeddings_service: Annotated[
+        EmbeddingsService,
+        Depends(get_embeddings_svc),
+    ] = None,
 ):
-    """
-    Search the textbook content without generating a chat response.
-
-    Useful for finding relevant sections before asking a question.
-    """
     results = embeddings_service.search(
         query=q,
         limit=limit,
@@ -219,3 +217,4 @@ async def search_content(
         "results": [r.to_dict() for r in results],
         "count": len(results),
     }
+
