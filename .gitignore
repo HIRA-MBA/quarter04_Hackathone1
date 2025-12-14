@@ -93,3 +93,6 @@ qdrant_data/
 
 # Jupyter
 .ipynb_checkpoints/
+
+nul
+

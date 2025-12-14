@@ -43,7 +43,12 @@ const config: Config = {
   organizationName: 'physical-ai-textbook',
   projectName: 'physical-ai-textbook',
 
-  onBrokenLinks: 'warn',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
+  
   onBrokenMarkdownLinks: 'warn',
 
   i18n: {
@@ -64,16 +69,14 @@ const config: Config = {
   presets: [
     [
       'classic',
-      {
-        docs: {
-          sidebarPath: './sidebars.ts',
-          routeBasePath: '/',
-          showLastUpdateTime: true,
-        },
-        blog: false,
-        theme: {
-          customCss: './src/css/custom.css',
-        },
+      { docs: {
+        sidebarPath: './sidebars.ts',
+        routeBasePath: '/',
+        showLastUpdateTime: false,
+        showLastUpdateAuthor: false,
+      },
+      
+        
       } satisfies Preset.Options,
     ],
   ],
