@@ -134,7 +134,7 @@ export default function ChatBot({
           <div className={styles.messagesArea}>
             {messages.length === 0 && !isLoading && (
               <div className={styles.welcomeMessage}>
-                <p>Hi! I'm your AI tutor for the Physical AI textbook.</p>
+                <p>Hi! I&apos;m your AI tutor for the Physical AI textbook.</p>
                 <p>Ask me questions about:</p>
                 <ul>
                   <li>ROS 2 and robotics concepts</li>

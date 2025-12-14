@@ -126,7 +126,7 @@ export default function SigninPage(): React.ReactElement {
           </div>
 
           <p className={styles.switchAuth}>
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <a href="/auth/signup">Sign Up</a>
           </p>
         </div>

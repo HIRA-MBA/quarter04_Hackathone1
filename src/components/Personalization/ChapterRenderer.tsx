@@ -100,7 +100,8 @@ export default function ChapterRenderer({
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [progress, setProgress] = useState<ProgressSummary | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [startTime, setStartTime] = useState<number>(Date.now());
+  // eslint-disable-next-line react-hooks/purity
+  const [startTime, setStartTime] = useState<number>(() => Date.now());
   const [chapterProgress, setChapterProgress] = useState(0);
 
   const context = CHAPTER_CONTEXT[chapterId] || {
@@ -137,6 +138,7 @@ export default function ChapterRenderer({
     };
 
     loadUserData();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStartTime(Date.now());
   }, [chapterId]);
 

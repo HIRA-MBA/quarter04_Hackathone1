@@ -79,12 +79,49 @@ docker-compose up -d
 | Vector Database | Qdrant |
 | Relational Database | Neon Postgres |
 | AI Integration | OpenAI Agents SDK |
-| Frontend Deployment | GitHub Pages (manual upload) |
-| Backend Deployment | Railway/Fly.io (separate) |
+| Frontend Deployment | Vercel / GitHub Pages |
+| Backend Deployment | Fly.io |
+| CI/CD | GitHub Actions |
+
+## Features
+
+- **Sequential Learning**: Progress through chapters with prerequisites and learning objectives
+- **Interactive Chatbot**: RAG-powered AI assistant for contextual help
+- **Hands-on Labs**: Practical exercises with ROS 2, Gazebo, Isaac Sim
+- **Personalization**: User progress tracking and recommendations
+- **Bilingual Support**: English and Urdu with RTL layout support
+- **Capstone Projects**: Graded projects at module milestones
+
+## Commands
+
+```bash
+# Development
+npm run start          # Start dev server
+npm run build          # Production build
+npm run typecheck      # TypeScript validation
+npm run lint           # ESLint check
+
+# Backend
+uvicorn app.main:app --reload  # Start API
+python -m app.cli.ingest       # Ingest docs to vector DB
+```
+
+## Environment Variables
+
+Create `.env` files based on `.env.example`:
+
+**Frontend** (root):
+- `REACT_APP_API_URL` - Backend API URL
+
+**Backend** (`backend/.env`):
+- `DATABASE_URL` - Neon Postgres connection
+- `QDRANT_URL` - Qdrant cloud URL
+- `OPENAI_API_KEY` - OpenAI API key
+- `JWT_SECRET` - Auth secret key
 
 ## Contributing
 
-Contributions are welcome! Please read our contributing guidelines before submitting PRs.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
