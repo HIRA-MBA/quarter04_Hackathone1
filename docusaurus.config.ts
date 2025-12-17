@@ -7,6 +7,11 @@ const config: Config = {
   tagline: 'Embodied Intelligence: From ROS 2 to Vision-Language-Action Models',
   favicon: 'img/favicon.ico',
 
+  // Custom fields accessible via useDocusaurusContext
+  customFields: {
+    apiUrl: process.env.API_URL || 'https://quarter04hackathone1-production.up.railway.app',
+  },
+
   // Custom head tags for Urdu font support
   headTags: [
     {
@@ -37,7 +42,7 @@ const config: Config = {
     v4: true,
   },
 
-  url: 'https://physical-ai-textbook.vercel.app',
+  url: 'https://quarter04-hackathone1.vercel.app',
   baseUrl: '/',
 
   organizationName: 'physical-ai-textbook',

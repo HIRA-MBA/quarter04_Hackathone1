@@ -20,7 +20,7 @@ from app.db.postgres import get_db_session, get_session_maker
 from app.services.rag.chat import get_chat_service, ChatService
 from app.services.rag.embeddings import get_embeddings_service, EmbeddingsService
 
-router = APIRouter(prefix="/api/chat", tags=["chat"])
+router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 # Request/Response Models

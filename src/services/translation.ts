@@ -2,7 +2,7 @@
  * Translation API client for Urdu language support.
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import { getApiUrl } from './config';
 
 export interface TranslationResponse {
   original_text: string;
@@ -28,11 +28,10 @@ export interface SupportedLanguage {
 }
 
 class TranslationApiClient {
-  private baseUrl: string;
   private cache: Map<string, string> = new Map();
 
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
+  private get baseUrl(): string {
+    return getApiUrl();
   }
 
   /**

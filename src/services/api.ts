@@ -2,7 +2,7 @@
  * API client for the RAG chatbot backend.
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import { getApiUrl } from './config';
 
 export interface ChatSource {
   chapter: string;
@@ -42,11 +42,10 @@ export interface CollectionStats {
 }
 
 class ChatApiClient {
-  private baseUrl: string;
   private sessionId: string | null = null;
 
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
+  private get baseUrl(): string {
+    return getApiUrl();
   }
 
   /**
