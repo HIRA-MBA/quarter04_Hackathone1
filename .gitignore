@@ -87,6 +87,8 @@ htmlcov/
 backend/.env
 backend/*.db
 backend/alembic/versions/__pycache__/
+backend/check_*.py
+backend/None
 
 # Qdrant data (local development)
 qdrant_data/
