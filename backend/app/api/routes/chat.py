@@ -16,8 +16,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.postgres import get_db_session
-
+from app.db.postgres import get_db_session, get_session_maker
 from app.services.rag.chat import get_chat_service, ChatService
 from app.services.rag.embeddings import get_embeddings_service, EmbeddingsService
 
@@ -171,21 +170,58 @@ async def clear_session(
 @router.post("/feedback")
 async def submit_feedback(
     request: FeedbackRequest,
-    db: Annotated[AsyncSession, Depends(get_db_session())],
+    chat_service: Annotated[ChatService, Depends(get_chat_svc)],
 ):
     """
     Submit feedback for a chat response.
 
     This helps improve the chatbot's responses over time.
     """
-    # TODO: Store feedback in database
-    # For now, just acknowledge receipt
+    session_maker = get_session_maker()
+    async with session_maker() as db:
+        # Get messages for this session and find the one at message_index
+        history = await chat_service.get_history_from_db(db, request.session_id, limit=100)
+        if request.message_index >= len(history):
+            raise HTTPException(status_code=404, detail="Message not found")
+
+        message = history[request.message_index]
+        await chat_service.save_feedback(
+            db, str(message.id), request.rating, request.comment
+        )
+
     return {
         "status": "success",
-        "message": "Feedback received",
+        "message": "Feedback saved",
         "session_id": request.session_id,
         "rating": request.rating,
     }
+
+
+@router.get("/history/{session_id}")
+async def get_history(
+    session_id: str,
+    chat_service: Annotated[ChatService, Depends(get_chat_svc)],
+    limit: int = Query(20, ge=1, le=100),
+):
+    """Get chat history for a session."""
+    session_maker = get_session_maker()
+    async with session_maker() as db:
+        history = await chat_service.get_history_from_db(db, session_id, limit=limit)
+        return {
+            "session_id": session_id,
+            "messages": [
+                {
+                    "id": str(m.id),
+                    "role": m.role,
+                    "content": m.content,
+                    "chapter": m.chapter,
+                    "sources": m.sources,
+                    "created_at": m.created_at.isoformat(),
+                }
+                for m in history
+            ],
+            "count": len(history),
+        }
 
 
 @router.get("/stats", response_model=CollectionStatsResponse)

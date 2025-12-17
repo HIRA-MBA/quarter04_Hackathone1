@@ -10,9 +10,12 @@ from typing import AsyncIterator
 from uuid import uuid4
 
 from openai import OpenAI
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.services.rag.embeddings import get_embeddings_service, SearchResult
+from app.models.chat_history import ChatHistory
 
 
 SYSTEM_PROMPT = """You are an expert AI tutor for a textbook on Physical AI and Humanoid Robotics. Your knowledge comes exclusively from the textbook content provided in the context.
@@ -237,6 +240,63 @@ Please provide a helpful answer based on the textbook content above."""
         """Delete a conversation entirely."""
         if session_id in self._conversations:
             del self._conversations[session_id]
+            return True
+        return False
+
+    async def save_message_to_db(
+        self,
+        db: AsyncSession,
+        session_id: str,
+        role: str,
+        content: str,
+        chapter: str | None = None,
+        sources: list | None = None,
+    ) -> ChatHistory:
+        """Persist a chat message to the database."""
+        record = ChatHistory(
+            session_id=session_id,
+            role=role,
+            content=content,
+            chapter=chapter,
+            sources=sources or [],
+        )
+        db.add(record)
+        await db.commit()
+        await db.refresh(record)
+        return record
+
+    async def get_history_from_db(
+        self,
+        db: AsyncSession,
+        session_id: str,
+        limit: int = 20,
+    ) -> list[ChatHistory]:
+        """Load chat history from the database."""
+        result = await db.execute(
+            select(ChatHistory)
+            .where(ChatHistory.session_id == session_id)
+            .order_by(ChatHistory.created_at.desc())
+            .limit(limit)
+        )
+        return list(reversed(result.scalars().all()))
+
+    async def save_feedback(
+        self,
+        db: AsyncSession,
+        message_id: str,
+        rating: int,
+        text: str | None = None,
+    ) -> bool:
+        """Save feedback for a message."""
+        from uuid import UUID
+        result = await db.execute(
+            select(ChatHistory).where(ChatHistory.id == UUID(message_id))
+        )
+        record = result.scalar_one_or_none()
+        if record:
+            record.feedback_rating = rating
+            record.feedback_text = text
+            await db.commit()
             return True
         return False
 
