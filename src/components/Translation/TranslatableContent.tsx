@@ -2,13 +2,13 @@
  * Component that translates its text content when Urdu is selected.
  */
 
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode, ElementType } from 'react';
 import { useTranslation } from '../../context/TranslationContext';
 
 interface TranslatableContentProps {
   children: ReactNode;
   chapterId?: string;
-  as?: keyof JSX.IntrinsicElements;
+  as?: ElementType;
   className?: string;
 }
 
@@ -30,8 +30,11 @@ export default function TranslatableContent({
   useEffect(() => {
     if (typeof children === 'string') {
       setOriginalText(children);
-    } else if (React.isValidElement(children) && typeof children.props.children === 'string') {
-      setOriginalText(children.props.children);
+    } else if (React.isValidElement(children)) {
+      const childProps = children.props as { children?: unknown };
+      if (typeof childProps.children === 'string') {
+        setOriginalText(childProps.children);
+      }
     }
   }, [children]);
 

@@ -34,14 +34,14 @@ class TestChatEndpoints:
 
     def test_chat_stats(self):
         """Test chat stats endpoint."""
-        response = client.get("/api/api/chat/stats")
+        response = client.get("/api/chat/stats")
         assert response.status_code == 200
         data = response.json()
         assert "collection_name" in data
 
     def test_chat_search(self):
         """Test chat search endpoint."""
-        response = client.get("/api/api/chat/search?q=ROS%202")
+        response = client.get("/api/chat/search?q=ROS%202")
         assert response.status_code == 200
         data = response.json()
         assert "query" in data
@@ -50,7 +50,7 @@ class TestChatEndpoints:
     def test_chat_message_validation(self):
         """Test chat message validation."""
         # Empty message should fail
-        response = client.post("/api/api/chat", json={"message": ""})
+        response = client.post("/api/chat", json={"message": ""})
         assert response.status_code == 422
 
 
