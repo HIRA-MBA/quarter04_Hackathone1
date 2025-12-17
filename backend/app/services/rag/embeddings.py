@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from openai import OpenAI
-from qdrant_client.models import PointStruct, Filter, FieldCondition, MatchValue
+from qdrant_client.models import PointStruct, Filter, FieldCondition, MatchValue, PointIdsList
 
 from app.config import get_settings
 from app.db.qdrant import get_qdrant_client, get_collection_name, ensure_collection_exists
@@ -129,7 +129,7 @@ class EmbeddingsService:
         query: str,
         limit: int = 5,
         chapter_filter: str | None = None,
-        score_threshold: float = 0.7,
+        score_threshold: float = 0.5,
     ) -> list[SearchResult]:
         """Search for similar content using vector similarity."""
         # Generate query embedding
@@ -147,10 +147,10 @@ class EmbeddingsService:
                 ]
             )
 
-        # Search in Qdrant
-        results = self.qdrant_client.search(
+        # Search in Qdrant using query_points (v1.7+ API)
+        results = self.qdrant_client.query_points(
             collection_name=self.collection_name,
-            query_vector=query_embedding,
+            query=query_embedding,
             limit=limit,
             query_filter=query_filter,
             score_threshold=score_threshold,
@@ -168,7 +168,7 @@ class EmbeddingsService:
                     if k not in ("content", "chapter", "section")
                 },
             )
-            for result in results
+            for result in results.points
         ]
 
     def search_with_context(
@@ -218,7 +218,7 @@ class EmbeddingsService:
         if point_ids:
             self.qdrant_client.delete(
                 collection_name=self.collection_name,
-                points_selector=point_ids,
+                points_selector=PointIdsList(points=point_ids),
             )
 
         return len(point_ids)
@@ -227,11 +227,14 @@ class EmbeddingsService:
         """Get statistics about the vector collection."""
         try:
             info = self.qdrant_client.get_collection(self.collection_name)
+            # Handle different Qdrant client versions
+            points_count = getattr(info, 'points_count', None)
+            if points_count is None and hasattr(info, 'vectors_count'):
+                points_count = info.vectors_count
             return {
                 "collection_name": self.collection_name,
-                "vectors_count": info.vectors_count,
-                "points_count": info.points_count,
-                "status": info.status.value,
+                "points_count": points_count,
+                "status": info.status.value if hasattr(info.status, 'value') else str(info.status),
             }
         except Exception as e:
             return {
