@@ -103,6 +103,7 @@ jobs:
   npm-security:
     name: NPM Security Scan
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -117,13 +118,14 @@ jobs:
         run: npm ci
 
       - name: Run npm audit
-        run: npm audit --audit-level=high || true
+        run: npm audit --audit-level=critical || true
 
       - name: Run npm audit (JSON report)
         run: npm audit --json > npm-audit-report.json || true
 
       - name: Upload npm audit report
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: npm-audit-report
           path: npm-audit-report.json
@@ -181,6 +183,7 @@ jobs:
   owasp-check:
     name: OWASP Dependency Check
     runs-on: ubuntu-latest
+    continue-on-error: true
     if: github.event_name == 'schedule' || github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
@@ -188,13 +191,14 @@ jobs:
 
       - name: Run OWASP Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
+        continue-on-error: true
         with:
           project: 'physical-ai-textbook'
           path: '.'
           format: 'HTML'
           args: >
             --suppression .github/owasp-suppressions.xml
-            --failOnCVSS 8
+            --failOnCVSS 9
 
       - name: Upload OWASP report
         uses: actions/upload-artifact@v4

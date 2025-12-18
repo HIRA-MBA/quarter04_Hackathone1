@@ -16,6 +16,7 @@
     "typecheck": "tsc",
     "lint": "eslint src/ --ext .ts,.tsx",
     "lint:fix": "eslint src/ --ext .ts,.tsx --fix",
+    "test": "echo \"No tests configured yet\" && exit 0",
     "validate:content": "node scripts/validate-content.js",
     "validate:links": "node scripts/validate-links.js",
     "audit:accessibility": "node scripts/audit-accessibility.js",

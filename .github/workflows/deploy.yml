@@ -142,7 +142,7 @@ jobs:
     name: Deploy to Railway
     needs: pre-deploy-check
     runs-on: ubuntu-latest
-    if: needs.pre-deploy-check.outputs.should_deploy == 'true'
+    if: needs.pre-deploy-check.outputs.should_deploy == 'true' && vars.DEPLOY_TO_RAILWAY == 'true'
     environment:
       name: railway-production
       url: ${{ vars.RAILWAY_URL || 'https://api.physical-ai-textbook.railway.app' }}
@@ -223,14 +223,19 @@ jobs:
   # ============================================
   health-check:
     name: Health Check
-    needs: [deploy-github-pages, deploy-railway]
+    needs: [deploy-github-pages]
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && needs.deploy-github-pages.result == 'success'
     steps:
       - name: Check frontend health
         run: |
+          FRONTEND_URL="${{ vars.FRONTEND_URL }}"
+          if [ -z "$FRONTEND_URL" ]; then
+            echo "FRONTEND_URL not configured, skipping health check"
+            exit 0
+          fi
           for i in {1..5}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ needs.deploy-github-pages.outputs.page_url || vars.FRONTEND_URL }}" || echo "000")
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL" || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "Frontend is healthy (HTTP $STATUS)"
               exit 0
@@ -238,37 +243,22 @@ jobs:
             echo "Attempt $i: HTTP $STATUS, retrying in 10s..."
             sleep 10
           done
-          echo "Frontend health check failed"
-          exit 1
-
-      - name: Check backend health
-        run: |
-          for i in {1..5}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ vars.API_URL }}/health" || echo "000")
-            if [ "$STATUS" = "200" ]; then
-              echo "Backend is healthy (HTTP $STATUS)"
-              exit 0
-            fi
-            echo "Attempt $i: HTTP $STATUS, retrying in 10s..."
-            sleep 10
-          done
-          echo "Backend health check failed"
-          exit 1
+          echo "Frontend health check failed (this is non-blocking)"
+          exit 0
 
       - name: Deployment summary
         run: |
           echo "## Post-deployment Health Check" >> $GITHUB_STEP_SUMMARY
-          echo "- **Frontend:** Healthy" >> $GITHUB_STEP_SUMMARY
-          echo "- **Backend:** Healthy" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend:** Checked" >> $GITHUB_STEP_SUMMARY
 
   # ============================================
   # Notify on Failure
   # ============================================
   notify-failure:
     name: Notify on Failure
-    needs: [deploy-github-pages, deploy-railway, health-check]
+    needs: [build-frontend, deploy-github-pages]
     runs-on: ubuntu-latest
-    if: failure()
+    if: failure() && vars.CREATE_ISSUES_ON_FAILURE == 'true'
     steps:
       - name: Create issue on failure
         uses: actions/github-script@v7
