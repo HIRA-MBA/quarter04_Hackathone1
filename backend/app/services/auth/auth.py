@@ -6,7 +6,7 @@ from uuid import UUID
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
@@ -248,3 +248,96 @@ class AuthService:
         user.hashed_password = self.get_password_hash(new_password)
         await self.db.commit()
         return True
+
+    def create_verification_token(self, user_id: UUID) -> str:
+        """Create an email verification token (24 hours expiry)."""
+        to_encode = {"sub": str(user_id), "type": "verify"}
+        expire = datetime.now(timezone.utc) + timedelta(hours=24)
+        to_encode["exp"] = expire
+        encoded_jwt = jwt.encode(
+            to_encode, settings.secret_key, algorithm=settings.jwt_algorithm
+        )
+        return encoded_jwt
+
+    async def verify_email(self, token: str) -> User | None:
+        """Verify a user's email using the verification token."""
+        payload = self.decode_token(token)
+        if not payload or payload.get("type") != "verify":
+            return None
+
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+
+        user = await self.get_user_by_id(UUID(user_id))
+        if not user:
+            return None
+
+        if user.is_verified:
+            return user  # Already verified
+
+        user.is_verified = True
+        await self.db.commit()
+        await self.db.refresh(user)
+        return user
+
+    async def resend_verification(self, email: str) -> str | None:
+        """Generate a new verification token for an unverified user."""
+        user = await self.get_user_by_email(email)
+        if not user or user.is_verified:
+            return None
+
+        return self.create_verification_token(user.id)
+
+    async def get_user_by_oauth(self, provider: str, oauth_id: str) -> User | None:
+        """Get a user by OAuth provider and ID."""
+        result = await self.db.execute(
+            select(User).where(
+                User.oauth_provider == provider,
+                User.oauth_id == oauth_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def link_oauth_to_user(
+        self,
+        user: User,
+        provider: str,
+        oauth_id: str,
+    ) -> User:
+        """Link an OAuth account to an existing user."""
+        user.oauth_provider = provider
+        user.oauth_id = oauth_id
+        user.is_verified = True  # OAuth linking verifies email
+        await self.db.commit()
+        await self.db.refresh(user)
+        return user
+
+    async def get_or_create_oauth_user(
+        self,
+        email: str,
+        full_name: str | None,
+        provider: str,
+        oauth_id: str,
+    ) -> tuple[User, bool]:
+        """
+        Get or create a user from OAuth data.
+
+        Returns:
+            Tuple of (user, is_new_user)
+        """
+        # First check if OAuth account is already linked
+        existing_oauth_user = await self.get_user_by_oauth(provider, oauth_id)
+        if existing_oauth_user:
+            return existing_oauth_user, False
+
+        # Check if email exists (user may have signed up with password)
+        existing_email_user = await self.get_user_by_email(email)
+        if existing_email_user:
+            # Link OAuth to existing account
+            await self.link_oauth_to_user(existing_email_user, provider, oauth_id)
+            return existing_email_user, False
+
+        # Create new OAuth user
+        user = await self.create_oauth_user(email, full_name, provider, oauth_id)
+        return user, True

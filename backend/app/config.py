@@ -39,6 +39,27 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
+    # OAuth - Google
+    google_client_id: str = Field(default="")
+    google_client_secret: str = Field(default="")
+    google_redirect_uri: str = Field(default="http://localhost:8000/api/auth/oauth/google/callback")
+
+    # OAuth - GitHub
+    github_client_id: str = Field(default="")
+    github_client_secret: str = Field(default="")
+    github_redirect_uri: str = Field(default="http://localhost:8000/api/auth/oauth/github/callback")
+
+    # Email (SMTP)
+    smtp_host: str = Field(default="smtp.gmail.com")
+    smtp_port: int = Field(default=587)
+    smtp_user: str = Field(default="")
+    smtp_password: str = Field(default="")
+    smtp_from_email: str = Field(default="noreply@physical-ai-textbook.com")
+    smtp_from_name: str = Field(default="Physical AI Textbook")
+
+    # Frontend URL (for email links)
+    frontend_url: str = Field(default="http://localhost:3000")
+
 
 @lru_cache
 def get_settings() -> Settings:

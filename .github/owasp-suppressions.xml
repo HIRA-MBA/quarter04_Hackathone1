@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!--
+    OWASP Dependency Check Suppressions
+    Physical AI & Robotics Textbook
+
+    Add suppressions for false positives here.
+    Documentation: https://jeremylong.github.io/DependencyCheck/general/suppression.html
+    -->
+
+    <!-- Example suppression (remove or modify as needed):
+    <suppress>
+        <notes>
+            <![CDATA[
+            This is a false positive. The vulnerability does not affect our usage.
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:npm/example-package@.*$</packageUrl>
+        <cve>CVE-2023-XXXXX</cve>
+    </suppress>
+    -->
+
+    <!-- Suppress development-only dependencies -->
+    <suppress>
+        <notes>
+            <![CDATA[
+            Development dependencies not included in production builds
+            ]]>
+        </notes>
+        <filePath regex="true">.*[/\\]node_modules[/\\]@types[/\\].*</filePath>
+        <cpe>cpe:/a:*:*</cpe>
+    </suppress>
+
+</suppressions>

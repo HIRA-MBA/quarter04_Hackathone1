@@ -1,0 +1,34 @@
+{
+  "defaults": {
+    "timeout": 30000,
+    "wait": 1000,
+    "standard": "WCAG2AA",
+    "runners": ["axe", "htmlcs"],
+    "chromeLaunchConfig": {
+      "args": ["--no-sandbox", "--disable-setuid-sandbox"]
+    },
+    "hideElements": ".DocSearch-Button, .theme-code-block-highlighted-line",
+    "ignore": [
+      "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail"
+    ]
+  },
+  "urls": [
+    "http://localhost:3000/",
+    "http://localhost:3000/front-matter/introduction",
+    "http://localhost:3000/module-1-ros2/ch01-welcome-ros2",
+    "http://localhost:3000/module-1-ros2/ch02-sensors-perception",
+    "http://localhost:3000/module-1-ros2/ch03-ros2-architecture",
+    "http://localhost:3000/module-1-ros2/ch04-urdf-humanoid",
+    "http://localhost:3000/module-1-ros2/ch05-edge-capstone",
+    "http://localhost:3000/module-2-digital-twin/ch06-gazebo-physics",
+    "http://localhost:3000/module-2-digital-twin/ch07-unity-capstone",
+    "http://localhost:3000/module-3-isaac/ch08-isaac-sim",
+    "http://localhost:3000/module-3-isaac/ch09-isaac-ros-gpu",
+    "http://localhost:3000/module-3-isaac/ch10-navigation-rl",
+    "http://localhost:3000/module-4-vla/ch11-humanoid-locomotion",
+    "http://localhost:3000/module-4-vla/ch12-dexterous-manipulation",
+    "http://localhost:3000/module-4-vla/ch13-vla-models",
+    "http://localhost:3000/module-4-vla/ch14-final-capstone",
+    "http://localhost:3000/back-matter/glossary"
+  ]
+}

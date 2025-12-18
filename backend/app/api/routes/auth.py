@@ -3,6 +3,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,11 +12,18 @@ from app.api.deps import (
     get_auth_service,
     get_current_user,
 )
+from app.config import get_settings
 from app.db.postgres import get_db_session
 from app.models.user import User
 from app.services.auth.auth import AuthService
+from app.services.auth.oauth import OAuthService
+from app.services.auth.email import EmailService
 
+settings = get_settings()
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+# In-memory state storage for OAuth (use Redis in production)
+oauth_states: dict[str, str] = {}
 
 
 # Request/Response schemas
@@ -81,6 +89,32 @@ class MessageResponse(BaseModel):
     message: str
 
 
+class VerifyEmailRequest(BaseModel):
+    """Email verification request schema."""
+
+    token: str
+
+
+class ResendVerificationRequest(BaseModel):
+    """Resend verification email request schema."""
+
+    email: EmailStr
+
+
+class OAuthUrlResponse(BaseModel):
+    """OAuth URL response schema."""
+
+    url: str
+    state: str
+
+
+class OAuthProvidersResponse(BaseModel):
+    """Available OAuth providers response."""
+
+    google: bool
+    github: bool
+
+
 # Routes
 @router.post(
     "/signup",
@@ -107,6 +141,14 @@ async def signup(
         email=body.email,
         password=body.password,
         full_name=body.full_name,
+    )
+
+    # Send verification email
+    verification_token = auth_service.create_verification_token(user.id)
+    await EmailService.send_verification_email(
+        to_email=user.email,
+        token=verification_token,
+        full_name=user.full_name,
     )
 
     # Create tokens
@@ -216,12 +258,16 @@ async def request_password_reset(
 ) -> MessageResponse:
     """Request a password reset email."""
     # Always return success to prevent email enumeration
+    user = await auth_service.get_user_by_email(body.email)
     reset_token = await auth_service.request_password_reset(body.email)
 
-    # In production, send email with reset_token
-    # For development, log the token
-    if reset_token:
-        print(f"Password reset token for {body.email}: {reset_token}")
+    # Send password reset email
+    if reset_token and user:
+        await EmailService.send_password_reset_email(
+            to_email=body.email,
+            token=reset_token,
+            full_name=user.full_name,
+        )
 
     return MessageResponse(
         message="If an account exists with this email, a reset link has been sent"
