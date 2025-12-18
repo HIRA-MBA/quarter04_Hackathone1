@@ -142,7 +142,7 @@ jobs:
     name: Deploy to Railway
     needs: pre-deploy-check
     runs-on: ubuntu-latest
-    if: needs.pre-deploy-check.outputs.should_deploy == 'true' && vars.DEPLOY_TO_RAILWAY == 'true'
+    if: needs.pre-deploy-check.outputs.should_deploy == 'true'
     environment:
       name: railway-production
       url: ${{ vars.RAILWAY_URL || 'https://api.physical-ai-textbook.railway.app' }}
