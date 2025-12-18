@@ -22,4 +22,4 @@ class Session(Base, UUIDMixin, TimestampMixin):
     user: Mapped["User"] = relationship(back_populates="sessions")
 
 
-from app.models.user import User
+from app.models.user import User  # noqa: E402

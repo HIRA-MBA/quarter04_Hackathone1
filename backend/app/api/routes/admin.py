@@ -2,7 +2,7 @@
 Admin API routes for backend management tasks.
 """
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -30,10 +30,12 @@ def run_ingestion_task(docs_path: str, batch_size: int = 10):
 
     try:
         from pathlib import Path
-        from app.services.rag.ingestion import BookIngester
-        from app.services.rag.embeddings import get_embeddings_service
-        from app.db.qdrant import get_qdrant_client, get_collection_name
+
         from qdrant_client.models import Distance, VectorParams
+
+        from app.db.qdrant import get_collection_name, get_qdrant_client
+        from app.services.rag.embeddings import get_embeddings_service
+        from app.services.rag.ingestion import BookIngester
 
         _ingestion_state["running"] = True
         _ingestion_state["error"] = None
@@ -120,7 +122,9 @@ async def get_ingestion_status():
 
     return IngestionStatus(
         status="completed" if _ingestion_state["chunks_processed"] > 0 else "idle",
-        message="Ingestion completed" if _ingestion_state["chunks_processed"] > 0 else "No ingestion running",
+        message="Ingestion completed"
+        if _ingestion_state["chunks_processed"] > 0
+        else "No ingestion running",
         chunks_processed=_ingestion_state["chunks_processed"],
         total_chunks=_ingestion_state["total_chunks"],
     )

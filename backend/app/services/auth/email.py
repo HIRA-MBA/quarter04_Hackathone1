@@ -5,7 +5,6 @@ import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Any
 
 from app.config import get_settings
 
@@ -91,7 +90,9 @@ class EmailService:
             server.sendmail(settings.smtp_from_email, to_email, message.as_string())
 
     @classmethod
-    async def send_verification_email(cls, to_email: str, token: str, full_name: str | None = None) -> bool:
+    async def send_verification_email(
+        cls, to_email: str, token: str, full_name: str | None = None
+    ) -> bool:
         """Send email verification email."""
         verification_url = f"{settings.frontend_url}/auth/verify-email?token={token}"
         name = full_name or "there"
@@ -157,7 +158,9 @@ If you didn't create an account with Physical AI Textbook, you can safely ignore
         )
 
     @classmethod
-    async def send_password_reset_email(cls, to_email: str, token: str, full_name: str | None = None) -> bool:
+    async def send_password_reset_email(
+        cls, to_email: str, token: str, full_name: str | None = None
+    ) -> bool:
         """Send password reset email."""
         reset_url = f"{settings.frontend_url}/auth/reset-password?token={token}"
         name = full_name or "there"

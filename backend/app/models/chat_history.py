@@ -34,4 +34,4 @@ class ChatHistory(Base, UUIDMixin, TimestampMixin):
     user: Mapped["User | None"] = relationship(back_populates="chat_history")
 
 
-from app.models.user import User
+from app.models.user import User  # noqa: E402

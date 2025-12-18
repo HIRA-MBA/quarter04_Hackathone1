@@ -34,4 +34,4 @@ class UserPreference(Base, UUIDMixin, TimestampMixin):
     user: Mapped["User"] = relationship(back_populates="preferences")
 
 
-from app.models.user import User
+from app.models.user import User  # noqa: E402

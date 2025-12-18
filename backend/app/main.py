@@ -1,11 +1,11 @@
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import get_settings
 from app.api.routes import admin, auth, chat, translation, user
+from app.config import get_settings
 
 
 @asynccontextmanager

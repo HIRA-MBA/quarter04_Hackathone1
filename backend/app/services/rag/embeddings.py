@@ -8,10 +8,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from openai import OpenAI
-from qdrant_client.models import PointStruct, Filter, FieldCondition, MatchValue, PointIdsList
+from qdrant_client.models import FieldCondition, Filter, MatchValue, PointIdsList, PointStruct
 
 from app.config import get_settings
-from app.db.qdrant import get_qdrant_client, get_collection_name, ensure_collection_exists
+from app.db.qdrant import ensure_collection_exists, get_collection_name, get_qdrant_client
 from app.services.rag.ingestion import TextChunk
 
 
@@ -76,6 +76,7 @@ class EmbeddingsService:
     def upsert_chunks(self, chunks: list[TextChunk], batch_size: int = 100) -> int:
         """Upsert text chunks with their embeddings into Qdrant."""
         import time
+
         total_upserted = 0
         total_batches = (len(chunks) + batch_size - 1) // batch_size
 
@@ -101,7 +102,7 @@ class EmbeddingsService:
                         **chunk.metadata,
                     },
                 )
-                for chunk, embedding in zip(batch, embeddings)
+                for chunk, embedding in zip(batch, embeddings, strict=True)
             ]
 
             # Upsert to Qdrant with retry
@@ -116,7 +117,7 @@ class EmbeddingsService:
                 except Exception as e:
                     if attempt < max_retries - 1:
                         print(f"   Retry {attempt + 1}/{max_retries} after error: {e}")
-                        time.sleep(2 ** attempt)  # Exponential backoff
+                        time.sleep(2**attempt)  # Exponential backoff
                     else:
                         raise
 
@@ -228,13 +229,13 @@ class EmbeddingsService:
         try:
             info = self.qdrant_client.get_collection(self.collection_name)
             # Handle different Qdrant client versions
-            points_count = getattr(info, 'points_count', None)
-            if points_count is None and hasattr(info, 'vectors_count'):
+            points_count = getattr(info, "points_count", None)
+            if points_count is None and hasattr(info, "vectors_count"):
                 points_count = info.vectors_count
             return {
                 "collection_name": self.collection_name,
                 "points_count": points_count,
-                "status": info.status.value if hasattr(info.status, 'value') else str(info.status),
+                "status": info.status.value if hasattr(info.status, "value") else str(info.status),
             }
         except Exception as e:
             return {

@@ -1,18 +1,18 @@
 """Authentication service for user management."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from sqlalchemy import select, or_
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
+from app.models.preference import UserPreference
 from app.models.session import Session
 from app.models.user import User
-from app.models.preference import UserPreference
 
 settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -39,35 +39,27 @@ class AuthService:
         """Create a JWT access token."""
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
+            expire = datetime.now(UTC) + expires_delta
         else:
-            expire = datetime.now(timezone.utc) + timedelta(
-                minutes=settings.access_token_expire_minutes
-            )
+            expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(
-            to_encode, settings.secret_key, algorithm=settings.jwt_algorithm
-        )
+        encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.jwt_algorithm)
         return encoded_jwt
 
     @staticmethod
     def create_refresh_token(data: dict[str, Any]) -> str:
         """Create a JWT refresh token (7 days expiry)."""
         to_encode = data.copy()
-        expire = datetime.now(timezone.utc) + timedelta(days=7)
+        expire = datetime.now(UTC) + timedelta(days=7)
         to_encode.update({"exp": expire, "type": "refresh"})
-        encoded_jwt = jwt.encode(
-            to_encode, settings.secret_key, algorithm=settings.jwt_algorithm
-        )
+        encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.jwt_algorithm)
         return encoded_jwt
 
     @staticmethod
     def decode_token(token: str) -> dict[str, Any] | None:
         """Decode and validate a JWT token."""
         try:
-            payload = jwt.decode(
-                token, settings.secret_key, algorithms=[settings.jwt_algorithm]
-            )
+            payload = jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
             return payload
         except JWTError:
             return None
@@ -166,9 +158,7 @@ class AuthService:
     ) -> Session:
         """Create a new session for a user."""
         access_token = self.create_access_token({"sub": str(user_id)})
-        expires_at = datetime.now(timezone.utc) + timedelta(
-            minutes=settings.access_token_expire_minutes
-        )
+        expires_at = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
 
         session = Session(
             user_id=user_id,
@@ -196,7 +186,7 @@ class AuthService:
         """Get a session by token."""
         result = await self.db.execute(select(Session).where(Session.token == token))
         session = result.scalar_one_or_none()
-        if session and session.expires_at > datetime.now(timezone.utc):
+        if session and session.expires_at > datetime.now(UTC):
             return session
         return None
 
@@ -252,11 +242,9 @@ class AuthService:
     def create_verification_token(self, user_id: UUID) -> str:
         """Create an email verification token (24 hours expiry)."""
         to_encode = {"sub": str(user_id), "type": "verify"}
-        expire = datetime.now(timezone.utc) + timedelta(hours=24)
+        expire = datetime.now(UTC) + timedelta(hours=24)
         to_encode["exp"] = expire
-        encoded_jwt = jwt.encode(
-            to_encode, settings.secret_key, algorithm=settings.jwt_algorithm
-        )
+        encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.jwt_algorithm)
         return encoded_jwt
 
     async def verify_email(self, token: str) -> User | None:

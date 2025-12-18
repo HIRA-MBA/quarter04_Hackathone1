@@ -9,16 +9,14 @@ Provides endpoints for:
 """
 
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.postgres import get_db_session, get_session_maker
-from app.services.rag.chat import get_chat_service, ChatService
-from app.services.rag.embeddings import get_embeddings_service, EmbeddingsService
+from app.db.postgres import get_session_maker
+from app.services.rag.chat import ChatService, get_chat_service
+from app.services.rag.embeddings import EmbeddingsService, get_embeddings_service
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -28,7 +26,9 @@ class ChatRequest(BaseModel):
     """Request model for chat endpoint."""
 
     message: str = Field(..., min_length=1, max_length=2000)
-    session_id: str | None = Field(default=None, description="Session ID for conversation continuity")
+    session_id: str | None = Field(
+        default=None, description="Session ID for conversation continuity"
+    )
     chapter: str | None = Field(default=None, description="Current chapter context")
     stream: bool = Field(default=False, description="Enable streaming response")
 
@@ -141,6 +141,7 @@ async def send_message_stream(
 
     This endpoint always streams the response, regardless of the `stream` field.
     """
+
     async def generate():
         async for chunk in chat_service.chat_stream(
             query=request.message,
@@ -185,9 +186,7 @@ async def submit_feedback(
             raise HTTPException(status_code=404, detail="Message not found")
 
         message = history[request.message_index]
-        await chat_service.save_feedback(
-            db, str(message.id), request.rating, request.comment
-        )
+        await chat_service.save_feedback(db, str(message.id), request.rating, request.comment)
 
     return {
         "status": "success",
@@ -232,6 +231,7 @@ async def get_stats(
     stats = embeddings_service.get_collection_stats()
     return CollectionStatsResponse(**stats)
 
+
 @router.get("/search")
 async def search_content(
     q: Annotated[str, Query(..., min_length=1, max_length=500, description="Search query")],
@@ -253,4 +253,3 @@ async def search_content(
         "results": [r.to_dict() for r in results],
         "count": len(results),
     }
-

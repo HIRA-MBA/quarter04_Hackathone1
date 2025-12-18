@@ -7,9 +7,9 @@ suitable for vector embedding and retrieval.
 
 import hashlib
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator
 
 
 @dataclass
@@ -240,10 +240,12 @@ class BookIngester:
             chapter_chunks = list(self.ingest_file(file_path))
             total_chunks += len(chapter_chunks)
             total_chars += sum(len(c.content) for c in chapter_chunks)
-            chapters.append({
-                "chapter": self.extract_chapter_name(file_path),
-                "chunks": len(chapter_chunks),
-            })
+            chapters.append(
+                {
+                    "chapter": self.extract_chapter_name(file_path),
+                    "chunks": len(chapter_chunks),
+                }
+            )
 
         return {
             "total_files": len(files),

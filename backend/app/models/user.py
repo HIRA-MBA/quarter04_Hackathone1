@@ -26,6 +26,6 @@ class User(Base, UUIDMixin, TimestampMixin):
 
 
 # Import at end to avoid circular imports
-from app.models.session import Session
-from app.models.preference import UserPreference
-from app.models.chat_history import ChatHistory
+from app.models.chat_history import ChatHistory  # noqa: E402
+from app.models.preference import UserPreference  # noqa: E402
+from app.models.session import Session  # noqa: E402

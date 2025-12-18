@@ -1,7 +1,6 @@
 """User API routes for profile, preferences, and progress tracking."""
 
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -301,17 +300,24 @@ async def get_progress_summary(
         )
 
     completed = preference.completed_chapters
-    completed_count = sum(
-        1 for ch in completed.values() if ch.get("completed", False)
-    )
+    completed_count = sum(1 for ch in completed.values() if ch.get("completed", False))
 
     # Determine current module based on progress
     chapter_modules = {
-        "ch01": "module-1", "ch02": "module-1", "ch03": "module-1",
-        "ch04": "module-1", "ch05": "module-1",
-        "ch06": "module-2", "ch07": "module-2",
-        "ch08": "module-3", "ch09": "module-3", "ch10": "module-3",
-        "ch11": "module-4", "ch12": "module-4", "ch13": "module-4", "ch14": "module-4",
+        "ch01": "module-1",
+        "ch02": "module-1",
+        "ch03": "module-1",
+        "ch04": "module-1",
+        "ch05": "module-1",
+        "ch06": "module-2",
+        "ch07": "module-2",
+        "ch08": "module-3",
+        "ch09": "module-3",
+        "ch10": "module-3",
+        "ch11": "module-4",
+        "ch12": "module-4",
+        "ch13": "module-4",
+        "ch14": "module-4",
     }
 
     # Find first incomplete chapter
@@ -321,7 +327,7 @@ async def get_progress_summary(
 
     for ch_prefix in chapter_order:
         ch_key = next(
-            (k for k in completed.keys() if k.startswith(ch_prefix)),
+            (k for k in completed if k.startswith(ch_prefix)),
             None,
         )
         if not ch_key or not completed.get(ch_key, {}).get("completed", False):
@@ -451,7 +457,7 @@ async def get_recommendations(
 
     for chapter_id, title, difficulty in chapters:
         # Skip completed chapters
-        if any(chapter_id in k for k in completed.keys()):
+        if any(chapter_id in k for k in completed):
             ch_data = next(
                 (v for k, v in completed.items() if chapter_id in k),
                 {},

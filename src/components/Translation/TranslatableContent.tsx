@@ -2,7 +2,7 @@
  * Component that translates its text content when Urdu is selected.
  */
 
-import React, { useState, useEffect, ReactNode, ElementType } from 'react';
+import React, { useState, useEffect, useMemo, ReactNode, ElementType } from 'react';
 import { useTranslation } from '../../context/TranslationContext';
 
 interface TranslatableContentProps {
@@ -24,27 +24,39 @@ export default function TranslatableContent({
 }: TranslatableContentProps): React.ReactElement {
   const { language, translateText, isTranslating } = useTranslation();
   const [translatedContent, setTranslatedContent] = useState<string | null>(null);
-  const [originalText, setOriginalText] = useState<string>('');
 
-  // Extract text from children
-  useEffect(() => {
+  // Extract text from children using useMemo (not setState in effect)
+  const originalText = useMemo(() => {
     if (typeof children === 'string') {
-      setOriginalText(children);
+      return children;
     } else if (React.isValidElement(children)) {
       const childProps = children.props as { children?: unknown };
       if (typeof childProps.children === 'string') {
-        setOriginalText(childProps.children);
+        return childProps.children;
       }
     }
+    return '';
   }, [children]);
 
-  // Translate when language changes
+  // Handle translation when language or text changes
   useEffect(() => {
+    let cancelled = false;
+
     if (language === 'ur' && originalText) {
-      translateText(originalText, chapterId).then(setTranslatedContent);
-    } else {
-      setTranslatedContent(null);
+      translateText(originalText, chapterId).then((result) => {
+        if (!cancelled) {
+          setTranslatedContent(result);
+        }
+      });
     }
+
+    // Cleanup: reset translation when not in Urdu mode
+    return () => {
+      cancelled = true;
+      if (language !== 'ur') {
+        setTranslatedContent(null);
+      }
+    };
   }, [language, originalText, chapterId, translateText]);
 
   // If we have translated content and language is Urdu, show it

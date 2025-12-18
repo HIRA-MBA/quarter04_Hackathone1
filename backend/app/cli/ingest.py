@@ -15,16 +15,15 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app.services.rag.ingestion import BookIngester
-from app.services.rag.embeddings import get_embeddings_service
-from app.db.qdrant import get_qdrant_client, get_collection_name
 from qdrant_client.models import Distance, VectorParams
+
+from app.db.qdrant import get_collection_name, get_qdrant_client
+from app.services.rag.embeddings import get_embeddings_service
+from app.services.rag.ingestion import BookIngester
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Ingest book content into the vector database"
-    )
+    parser = argparse.ArgumentParser(description="Ingest book content into the vector database")
     parser.add_argument(
         "--docs-path",
         type=str,
@@ -73,7 +72,7 @@ def main():
         print(f"Error: Docs path does not exist: {docs_path}")
         sys.exit(1)
 
-    print(f"Book Ingestion Tool")
+    print("Book Ingestion Tool")
     print(f"   Docs path: {docs_path}")
     print(f"   Chunk size: {args.chunk_size}")
     print(f"   Chunk overlap: {args.chunk_overlap}")
@@ -89,7 +88,7 @@ def main():
     # Show stats
     if args.stats_only:
         stats = ingester.get_stats()
-        print(f"Ingestion Statistics:")
+        print("Ingestion Statistics:")
         print(f"   Total files: {stats['total_files']}")
         print(f"   Total chunks: {stats['total_chunks']}")
         print(f"   Total characters: {stats['total_characters']:,}")
@@ -139,7 +138,7 @@ def main():
         print(f"Ingesting chapter: {args.chapter}")
         chunks = list(ingester.ingest_file(chapter_file))
     else:
-        print(f"Ingesting all chapters...")
+        print("Ingesting all chapters...")
         chunks = list(ingester.ingest_all())
 
     print(f"   Found {len(chunks)} chunks")
@@ -171,7 +170,7 @@ def main():
     # Show final stats
     final_stats = embeddings_service.get_collection_stats()
     print()
-    print(f"Ingestion complete!")
+    print("Ingestion complete!")
     print(f"   Total vectors in collection: {final_stats.get('vectors_count', 'unknown')}")
 
 

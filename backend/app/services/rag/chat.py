@@ -5,8 +5,8 @@ Handles conversation management, context injection, and response generation
 using OpenAI's chat completion API.
 """
 
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
-from typing import AsyncIterator
 from uuid import uuid4
 
 from openai import OpenAI
@@ -14,9 +14,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.services.rag.embeddings import get_embeddings_service, SearchResult
 from app.models.chat_history import ChatHistory
-
+from app.services.rag.embeddings import SearchResult, get_embeddings_service
 
 SYSTEM_PROMPT = """You are an expert AI tutor for a textbook on Physical AI and Humanoid Robotics. Your knowledge comes exclusively from the textbook content provided in the context.
 
@@ -113,9 +112,7 @@ class ChatService:
 
 Note: No relevant content was found in the textbook for this question."""
 
-        source_list = "\n".join(
-            f"- {s.chapter}: {s.section}" for s in sources
-        )
+        source_list = "\n".join(f"- {s.chapter}: {s.section}" for s in sources)
 
         return f"""Based on the following textbook content:
 
@@ -289,9 +286,8 @@ Please provide a helpful answer based on the textbook content above."""
     ) -> bool:
         """Save feedback for a message."""
         from uuid import UUID
-        result = await db.execute(
-            select(ChatHistory).where(ChatHistory.id == UUID(message_id))
-        )
+
+        result = await db.execute(select(ChatHistory).where(ChatHistory.id == UUID(message_id)))
         record = result.scalar_one_or_none()
         if record:
             record.feedback_rating = rating

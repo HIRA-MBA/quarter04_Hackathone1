@@ -1,7 +1,6 @@
 """Translation service for Urdu language support using OpenAI."""
 
 import hashlib
-from datetime import datetime, timezone
 
 from openai import AsyncOpenAI
 from sqlalchemy import select

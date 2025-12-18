@@ -3,9 +3,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import (
     check_rate_limit,
@@ -13,10 +11,8 @@ from app.api.deps import (
     get_current_user,
 )
 from app.config import get_settings
-from app.db.postgres import get_db_session
 from app.models.user import User
 from app.services.auth.auth import AuthService
-from app.services.auth.oauth import OAuthService
 from app.services.auth.email import EmailService
 
 settings = get_settings()
@@ -316,9 +312,7 @@ async def oauth_redirect(provider: str) -> MessageResponse:
 
     # In production, redirect to OAuth provider
     # This is a placeholder that would be implemented with actual OAuth flow
-    return MessageResponse(
-        message=f"OAuth with {provider} - redirect URL would be generated here"
-    )
+    return MessageResponse(message=f"OAuth with {provider} - redirect URL would be generated here")
 
 
 @router.get("/oauth/{provider}/callback")
