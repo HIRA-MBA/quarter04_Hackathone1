@@ -64,8 +64,8 @@ jobs:
       - name: Build for production
         run: npm run build
         env:
-          REACT_APP_API_URL: ${{ vars.API_URL || 'https://api.physical-ai-textbook.railway.app' }}
-          REACT_APP_WS_URL: ${{ vars.WS_URL || 'wss://api.physical-ai-textbook.railway.app' }}
+          REACT_APP_API_URL: ${{ vars.API_URL || 'https://quarter04hackathone1-production.up.railway.app' }}
+          REACT_APP_WS_URL: ${{ vars.WS_URL || 'wss://quarter04hackathone1-production.up.railway.app' }}
           NODE_ENV: production
 
       - name: Upload build artifact
@@ -145,7 +145,7 @@ jobs:
     if: needs.pre-deploy-check.outputs.should_deploy == 'true'
     environment:
       name: railway-production
-      url: ${{ vars.RAILWAY_URL || 'https://api.physical-ai-textbook.railway.app' }}
+      url: ${{ vars.RAILWAY_URL || 'https://quarter04hackathone1-production.up.railway.app' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

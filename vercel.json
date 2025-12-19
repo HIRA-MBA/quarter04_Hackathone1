@@ -99,11 +99,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://api.physical-ai-textbook.railway.app/:path*"
+      "destination": "https://quarter04hackathone1-production.up.railway.app/:path*"
     },
     {
       "source": "/ws/:path*",
-      "destination": "wss://api.physical-ai-textbook.railway.app/:path*"
+      "destination": "wss://quarter04hackathone1-production.up.railway.app/:path*"
     }
   ]
 }
