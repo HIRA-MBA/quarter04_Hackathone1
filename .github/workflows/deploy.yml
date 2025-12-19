@@ -155,7 +155,7 @@ jobs:
 
       - name: Deploy to Railway
         working-directory: backend
-        run: railway up --service quarter04_Hackathone1
+        run: railway up --service quarter04_Hackathone1 --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
