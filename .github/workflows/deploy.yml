@@ -155,9 +155,11 @@ jobs:
 
       - name: Link Railway Project
         working-directory: backend
-        run: railway link -p ${{ secrets.RAILWAY_PROJECT_ID }}
+        run: |
+         echo "Linking Railway project..."
+         railway link -p ${{ secrets.RAILWAY_PROJECT_ID }}
         env:
-           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy to Railway
         working-directory: backend
