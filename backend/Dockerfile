@@ -13,5 +13,6 @@ COPY app/ ./app/
 COPY alembic.ini .
 COPY migrations/ ./migrations/
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Railway uses PORT env variable → default 8080
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
 
