@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# Build timestamp: force fresh build
+# Build: v2 - force cache clear
 WORKDIR /app
 
 # Install build dependencies
