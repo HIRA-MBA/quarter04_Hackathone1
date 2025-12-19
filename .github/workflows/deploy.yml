@@ -154,10 +154,12 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Link Railway Project
-        run: railway link -p ${{ secrets.RAILWAY_PROJECT_ID }}
         working-directory: backend
+        run: railway link -p "$RAILWAY_PROJECT_ID"
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+              RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+              RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+
 
       - name: Deploy to Railway
         run: railway up
