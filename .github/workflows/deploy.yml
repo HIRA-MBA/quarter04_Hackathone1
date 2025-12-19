@@ -157,21 +157,15 @@ jobs:
         working-directory: backend
         run: railway link -p "$RAILWAY_PROJECT_ID"
         env:
-              RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-              RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
 
       - name: Deploy to Railway
-        run: railway up
         working-directory: backend
+        run: railway up
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
-      - name: Deployment summary
-        run: |
-          echo "## Backend Deployment (Railway)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Service:** backend" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status:** Success" >> $GITHUB_STEP_SUMMARY
 
   # ============================================
   # Deploy Backend to Fly.io (Alternative)
