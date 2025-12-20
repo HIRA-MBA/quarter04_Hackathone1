@@ -9,6 +9,16 @@
 
 A comprehensive educational textbook for teaching Physical AI and Robotics through hands-on learning. The book covers the complete stack from ROS 2 fundamentals through advanced Vision-Language-Action models, organized into 4 modules with 14 chapters, plus front matter and back matter sections. Each chapter includes objectives, code examples, lab exercises, diagram placeholders, RAG chatbot integration points, and optional personalization triggers.
 
+## Clarifications
+
+### Session 2025-12-20
+
+- Q: What is the primary delivery format for this textbook? → A: Web application - Interactive digital platform with embedded RAG chatbot
+- Q: What is the expected RAG chatbot response latency target? → A: < 3 seconds - Fast interactive experience, standard for LLM-powered chat
+- Q: What user authentication method should the web application support? → A: OAuth providers - Login via Google, GitHub, or similar (no password storage)
+- Q: How should the RAG chatbot scope its knowledge for student queries? → A: Current + completed chapters - Progressive scope based on student progress
+- Q: What languages should be supported for content translation? → A: English only - Single language for MVP, translation deferred to future phase
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Sequential Chapter Learning (Priority: P1)
@@ -146,6 +156,21 @@ A user personalizes their learning experience through optional features includin
 - **FR-025**: Content MUST NOT include ethics commentary within chapters (ethics content only in dedicated Back Matter section)
 - **FR-026**: All content MUST be in Markdown format
 - **FR-027**: Output MUST be JSON suitable for SpecKit automation with markdown-ready strings
+- **FR-028**: Content MUST be delivered via an interactive web application with embedded RAG chatbot integration
+
+### Non-Functional Requirements
+
+#### Performance
+
+- **NFR-001**: RAG chatbot responses MUST be delivered within 3 seconds (p95 latency target)
+
+#### Security
+
+- **NFR-002**: User authentication MUST use OAuth providers (Google, GitHub) with no local password storage
+
+#### Localization
+
+- **NFR-003**: Content MUST be in English only for MVP; translation support deferred to future phase
 
 ### Key Entities
 
@@ -154,8 +179,8 @@ A user personalizes their learning experience through optional features includin
 - **Code Example**: Executable code snippet; attributes: technology type, description, source code, expected output
 - **Lab Exercise**: Hands-on activity; attributes: title, prerequisites, steps, acceptance criteria, estimated duration
 - **Diagram Placeholder**: Visual element placeholder; attributes: description, type, suggested content
-- **RAG Integration Point**: Chatbot interaction location; attributes: trigger context, suggested queries, expected response themes
-- **Personalization Trigger**: Optional customization point; attributes: trigger type (translation/signup/signin), context, behavior
+- **RAG Integration Point**: Chatbot interaction location; attributes: trigger context, suggested queries, expected response themes; knowledge scope: current chapter plus all completed chapters (progressive access based on student progress)
+- **Personalization Trigger**: Optional customization point; attributes: trigger type (signup/signin for MVP; translation deferred), context, behavior
 
 ## Success Criteria *(mandatory)*
 

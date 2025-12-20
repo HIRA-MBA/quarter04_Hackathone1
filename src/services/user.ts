@@ -53,6 +53,16 @@ export interface Recommendation {
   difficulty_match: number;
 }
 
+export interface DifficultyAdjustment {
+  chapter: number;
+  user_level: string;
+  chapter_difficulty: string;
+  show_advanced_content: boolean;
+  show_beginner_tips: boolean;
+  expand_code_examples: boolean;
+  suggested_pace: 'very_slow' | 'slow' | 'normal' | 'fast';
+}
+
 class UserApiClient {
   private baseUrl: string;
 
@@ -222,6 +232,23 @@ class UserApiClient {
 
     if (!response.ok) {
       throw new Error('Failed to get recommendations');
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get difficulty adjustment for a chapter.
+   */
+  async getDifficultyAdjustment(chapterNum: number): Promise<DifficultyAdjustment> {
+    const response = await fetch(`${this.baseUrl}/api/user/difficulty/${chapterNum}`, {
+      headers: {
+        ...authApi.getAuthHeaders(),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get difficulty adjustment');
     }
 
     return response.json();

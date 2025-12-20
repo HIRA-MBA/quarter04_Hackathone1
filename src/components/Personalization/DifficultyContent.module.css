@@ -1,0 +1,183 @@
+/**
+ * DifficultyContent component styles.
+ */
+
+/* Advanced content */
+.advancedContent {
+  position: relative;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--ifm-color-emphasis-100);
+  border-left: 3px solid var(--ifm-color-primary);
+  border-radius: 0 8px 8px 0;
+}
+
+.advancedContent::before {
+  content: 'Advanced';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  padding: 0.125rem 0.5rem;
+  background: var(--ifm-color-primary);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 4px;
+}
+
+/* Hidden advanced content (for beginners) */
+.hiddenAdvanced {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 8px;
+  border: 1px dashed var(--ifm-color-emphasis-300);
+}
+
+.hiddenAdvanced .hiddenContent {
+  display: none;
+}
+
+.hiddenAdvanced.revealed .hiddenContent {
+  display: block;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.hiddenAdvanced.revealed .hiddenLabel,
+.hiddenAdvanced.revealed .showButton {
+  display: none;
+}
+
+.hiddenLabel {
+  font-size: 0.875rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.showButton {
+  margin-left: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: 4px;
+  color: var(--ifm-color-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.showButton:hover {
+  background: var(--ifm-color-primary);
+  color: white;
+}
+
+/* Beginner tip */
+.beginnerTip {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #e8f5e9;
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+}
+
+.tipIcon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.tipContent {
+  font-size: 0.9rem;
+  color: #1b5e20;
+}
+
+[data-theme='dark'] .beginnerTip {
+  background: rgba(76, 175, 80, 0.15);
+}
+
+[data-theme='dark'] .tipContent {
+  color: #a5d6a7;
+}
+
+/* Expandable code */
+.expandableCode {
+  margin: 1rem 0;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--ifm-color-emphasis-100);
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ifm-font-color-base);
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.expandButton:hover {
+  background: var(--ifm-color-emphasis-200);
+}
+
+.expandIcon {
+  font-size: 0.625rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.codeContent {
+  padding: 0;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.codeContent pre {
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Pace-aware styling */
+.paceAware {
+  position: relative;
+}
+
+.paceAware.very_slow::before {
+  content: '🐢 Take your time';
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.paceAware.slow::before {
+  content: '🚶 Recommended: careful reading';
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.paceAware.fast {
+  opacity: 0.9;
+}
+
+/* RTL support */
+[dir='rtl'] .advancedContent {
+  border-left: none;
+  border-right: 3px solid var(--ifm-color-primary);
+  border-radius: 8px 0 0 8px;
+}
+
+[dir='rtl'] .beginnerTip {
+  border-left: none;
+  border-right: 4px solid #4caf50;
+}

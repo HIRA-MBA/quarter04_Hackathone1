@@ -51,17 +51,18 @@ This document defines the data entities, relationships, and schemas for the Phys
 Stores authenticated user accounts.
 
 ```sql
+-- NOTE: OAuth-only authentication per clarification 2025-12-20
+-- No password_hash field - users authenticate via Google/GitHub only
 CREATE TABLE users (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email           VARCHAR(255) UNIQUE NOT NULL,
-    email_verified  BOOLEAN DEFAULT FALSE,
-    password_hash   VARCHAR(255),  -- NULL if OAuth-only
+    email_verified  BOOLEAN DEFAULT TRUE,  -- OAuth emails are pre-verified
     name            VARCHAR(255),
     avatar_url      TEXT,
 
-    -- OAuth fields
-    oauth_provider  VARCHAR(50),   -- 'google', 'github', NULL
-    oauth_id        VARCHAR(255),
+    -- OAuth fields (required - no password auth)
+    oauth_provider  VARCHAR(50) NOT NULL,  -- 'google' or 'github'
+    oauth_id        VARCHAR(255) NOT NULL,
 
     -- Metadata
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -69,7 +70,9 @@ CREATE TABLE users (
     last_login_at   TIMESTAMP WITH TIME ZONE,
 
     -- Constraints
-    CONSTRAINT valid_email CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+    CONSTRAINT valid_email CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT valid_oauth_provider CHECK (oauth_provider IN ('google', 'github')),
+    UNIQUE(oauth_provider, oauth_id)
 );
 
 CREATE INDEX idx_users_email ON users(email);
@@ -78,7 +81,7 @@ CREATE INDEX idx_users_oauth ON users(oauth_provider, oauth_id);
 
 **Validation Rules**:
 - Email must be valid format
-- Password hash required if no OAuth provider
+- OAuth provider required (google or github)
 - OAuth ID unique per provider
 
 ---
@@ -131,8 +134,8 @@ CREATE TABLE user_preferences (
     hardware_available  TEXT[],      -- ['ros2', 'gazebo', 'isaac', 'jetson']
     learning_goals      TEXT[],      -- ['career', 'research', 'hobby']
 
-    -- Display Preferences
-    preferred_language  VARCHAR(10) DEFAULT 'en' CHECK (preferred_language IN ('en', 'ur')),
+    -- Display Preferences (English-only for MVP per clarification 2025-12-20)
+    preferred_language  VARCHAR(10) DEFAULT 'en' CHECK (preferred_language = 'en'),  -- Urdu deferred
     theme               VARCHAR(10) DEFAULT 'light' CHECK (theme IN ('light', 'dark', 'system')),
     font_size           VARCHAR(10) DEFAULT 'medium' CHECK (font_size IN ('small', 'medium', 'large')),
 
@@ -152,7 +155,7 @@ CREATE INDEX idx_preferences_user ON user_preferences(user_id);
 
 **Validation Rules**:
 - experience_level must be one of: beginner, intermediate, advanced
-- preferred_language must be: en (English) or ur (Urdu)
+- preferred_language: en (English) only for MVP
 - completed_chapters must be integers 1-14
 
 ---
@@ -160,6 +163,11 @@ CREATE INDEX idx_preferences_user ON user_preferences(user_id);
 ### 4. ChatHistory
 
 Stores conversation history for RAG chatbot.
+
+**RAG Knowledge Scope** (per clarification 2025-12-20):
+- Chatbot queries are scoped to: current chapter + all completed chapters
+- Progressive access based on student progress
+- Implemented via filter on user_preferences.completed_chapters during vector search
 
 ```sql
 CREATE TABLE chat_history (

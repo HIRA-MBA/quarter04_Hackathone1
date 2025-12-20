@@ -139,57 +139,9 @@ paths:
           $ref: '#/components/responses/Unauthorized'
 
   # ============ AUTH ENDPOINTS ============
-  /auth/signup:
-    post:
-      tags: [Auth]
-      summary: Create a new account
-      operationId: signup
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SignupRequest'
-      responses:
-        '201':
-          description: Account created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '409':
-          description: Email already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /auth/signin:
-    post:
-      tags: [Auth]
-      summary: Sign in to existing account
-      operationId: signin
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SigninRequest'
-      responses:
-        '200':
-          description: Signed in successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '401':
-          description: Invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+  # NOTE: OAuth-only authentication per clarification 2025-12-20
+  # Email/password signup and signin endpoints removed
+  # Users authenticate via Google or GitHub OAuth only
 
   /auth/signout:
     post:
@@ -600,28 +552,7 @@ components:
           maxLength: 1000
 
     # ---- Auth Schemas ----
-    SignupRequest:
-      type: object
-      required: [email, password]
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 8
-        name:
-          type: string
-
-    SigninRequest:
-      type: object
-      required: [email, password]
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
+    # NOTE: SignupRequest and SigninRequest removed - OAuth-only auth (2025-12-20)
 
     AuthResponse:
       type: object
@@ -688,7 +619,7 @@ components:
             type: string
         preferred_language:
           type: string
-          enum: [en, ur]
+          enum: [en]  # Urdu deferred to future phase (2025-12-20)
         theme:
           type: string
           enum: [light, dark, system]

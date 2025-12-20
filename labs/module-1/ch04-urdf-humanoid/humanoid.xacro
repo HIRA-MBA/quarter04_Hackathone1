@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="humanoid_robot">
+  <!-- Properties -->
+  <xacro:property name="torso_mass" value="10.0"/>
+  <xacro:property name="limb_mass" value="2.0"/>
+  <xacro:property name="joint_effort" value="100"/>
+  <xacro:property name="joint_velocity" value="1.0"/>
+
+  <!-- Materials -->
+  <xacro:macro name="material_blue">
+    <material name="blue"><color rgba="0.2 0.2 0.8 1"/></material>
+  </xacro:macro>
+
+  <!-- Limb Macro -->
+  <xacro:macro name="limb" params="name length radius parent xyz rpy">
+    <link name="${name}">
+      <visual>
+        <geometry><cylinder radius="${radius}" length="${length}"/></geometry>
+        <xacro:material_blue/>
+      </visual>
+      <collision><geometry><cylinder radius="${radius}" length="${length}"/></geometry></collision>
+      <inertial>
+        <mass value="${limb_mass}"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      </inertial>
+    </link>
+    <joint name="${name}_joint" type="revolute">
+      <parent link="${parent}"/><child link="${name}"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.57" upper="1.57" effort="${joint_effort}" velocity="${joint_velocity}"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- Base Link -->
+  <link name="base_link">
+    <visual>
+      <geometry><box size="0.3 0.2 0.4"/></geometry>
+      <xacro:material_blue/>
+    </visual>
+    <inertial>
+      <mass value="${torso_mass}"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+  </link>
+
+  <!-- Arms -->
+  <xacro:limb name="left_upper_arm" length="0.25" radius="0.03" parent="base_link" xyz="0.18 0 0.15" rpy="0 0 0"/>
+  <xacro:limb name="right_upper_arm" length="0.25" radius="0.03" parent="base_link" xyz="-0.18 0 0.15" rpy="0 0 0"/>
+
+  <!-- Legs -->
+  <xacro:limb name="left_thigh" length="0.3" radius="0.04" parent="base_link" xyz="0.08 0 -0.2" rpy="0 0 0"/>
+  <xacro:limb name="right_thigh" length="0.3" radius="0.04" parent="base_link" xyz="-0.08 0 -0.2" rpy="0 0 0"/>
+</robot>

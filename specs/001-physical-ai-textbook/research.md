@@ -99,7 +99,7 @@ This document captures technology decisions, alternatives considered, and ration
 
 ## 5. Authentication
 
-### Decision: Better-Auth
+### Decision: Better-Auth (OAuth-Only)
 
 **Rationale**:
 - TypeScript-native, modern auth library
@@ -107,6 +107,7 @@ This document captures technology decisions, alternatives considered, and ration
 - Postgres adapter built-in
 - OAuth providers (Google, GitHub) supported
 - Session management with refresh tokens
+- **Clarification (2025-12-20)**: OAuth-only implementation - no email/password storage
 
 **Alternatives Considered**:
 
@@ -163,15 +164,19 @@ This document captures technology decisions, alternatives considered, and ration
 
 ## 8. Translation Approach
 
-### Decision: OpenAI GPT-4o-mini with Caching
+### Decision: DEFERRED TO FUTURE PHASE
 
-**Rationale**:
+**Clarification (2025-12-20)**: English-only for MVP. Translation system deferred to post-MVP phase.
+
+**Original Decision (when implemented)**: OpenAI GPT-4o-mini with Caching
+
+**Original Rationale** (preserved for future reference):
 - Quality Urdu translation
 - Same provider as chat (simpler ops)
 - Cache translations in Postgres
 - On-demand + background pre-translation
 
-**Alternatives Considered**:
+**Alternatives Considered** (preserved for future reference):
 
 | Option | Pros | Cons | Rejected Because |
 |--------|------|------|------------------|

@@ -11,6 +11,7 @@ RUN apt-get update && \
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+#RUN pip install --no-#   pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY app/ ./app/
@@ -22,4 +23,7 @@ EXPOSE 8000
 
 # Start server
 CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# We use 'sh -c' inside the JSON array so we can still use the ${PORT} variable
+#CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+
 

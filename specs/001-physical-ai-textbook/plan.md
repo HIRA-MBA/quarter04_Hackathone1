@@ -15,8 +15,8 @@ Multi-module Docusaurus textbook on Physical AI & Robotics (ROS 2 → VLA) with 
 **Testing**: Vitest (frontend), pytest (backend), Playwright (E2E)
 **Target Platform**: Vercel (Docusaurus SSG), Railway/Fly.io (FastAPI)
 **Project Type**: web (frontend + backend)
-**Performance Goals**: <500ms chatbot response, <2s page load, 99.5% uptime
-**Constraints**: Serverless-friendly, GDPR-compliant user data, offline-capable book content
+**Performance Goals**: <3s RAG chatbot response (p95), <2s page load, 99.5% uptime
+**Constraints**: Serverless-friendly, GDPR-compliant user data, offline-capable book content, OAuth-only auth (Google/GitHub), English-only MVP
 **Scale/Scope**: ~30k words book content, 14 chapters, 50+ code examples, 14+ lab exercises
 
 ## Constitution Check
@@ -29,7 +29,7 @@ Multi-module Docusaurus textbook on Physical AI & Robotics (ROS 2 → VLA) with 
 | II. Markdown-Only Format | ✅ PASS | GFM + MDX for interactive features only |
 | III. Modular Architecture | ✅ PASS | 4 modules, independent chapters with prerequisites |
 | IV. RAG-Integrated Learning | ✅ PASS | OpenAI Agents + FastAPI + Neon + Qdrant stack |
-| V. Multi-Language Support | ✅ PASS | English primary, Urdu secondary |
+| V. Multi-Language Support | ✅ PASS | English only for MVP; Urdu deferred to future phase |
 | VI. Reproducible Lab Exercises | ✅ PASS | Pinned versions, step-by-step, troubleshooting |
 
 **Excluded Content Check**: ✅ No vendor comparisons, no ethics in chapters, no hardcoded secrets
@@ -520,19 +520,18 @@ package.json
       "sub_milestones": [
         {
           "id": "M6.1",
-          "title": "Better-Auth Signup/Signin",
+          "title": "OAuth-Only Authentication",
           "tasks": [
-            "Integrate Better-Auth library",
-            "Create signup page with email/OAuth",
-            "Create signin page",
+            "Integrate Better-Auth library with OAuth providers",
+            "Create signin page with Google/GitHub OAuth buttons",
             "Implement session management",
-            "Add password reset flow"
+            "Configure OAuth callback handling"
           ],
           "acceptance": [
-            "Users can sign up",
-            "Users can sign in",
+            "Users can sign in via Google OAuth",
+            "Users can sign in via GitHub OAuth",
             "Sessions persist correctly",
-            "OAuth providers work"
+            "No password storage required"
           ]
         },
         {
@@ -569,12 +568,15 @@ package.json
     },
     {
       "id": "M7",
-      "title": "Urdu Translation System",
+      "title": "Translation System (Deferred)",
       "dependencies": ["M3", "M5.4"],
+      "status": "DEFERRED_TO_FUTURE_PHASE",
+      "rationale": "English-only for MVP per clarification session 2025-12-20",
       "sub_milestones": [
         {
           "id": "M7.1",
           "title": "Chapter-Level Translation Trigger",
+          "status": "DEFERRED",
           "tasks": [
             "Add language toggle component",
             "Implement translation API endpoint",
@@ -590,6 +592,7 @@ package.json
         {
           "id": "M7.2",
           "title": "Inline Translation Cache",
+          "status": "DEFERRED",
           "tasks": [
             "Design translation cache schema",
             "Implement cache-first retrieval",
@@ -750,11 +753,22 @@ package.json
     "M4": ["M3.1"],
     "M5": ["M1.4", "M3.1"],
     "M6": ["M5.2"],
-    "M7": ["M3", "M5.4"],
+    "M7": ["DEFERRED"],
     "M8": ["M2"],
-    "M9": ["M5", "M6", "M7"]
+    "M9": ["M5", "M6"]
   },
-  "critical_path": ["M1", "M2", "M3", "M5", "M6", "M9"]
+  "critical_path": ["M1", "M2", "M3", "M5", "M6", "M9"],
+  "clarification_updates": {
+    "date": "2025-12-20",
+    "changes": [
+      "NFR-001: RAG latency target updated to <3s (p95)",
+      "NFR-002: OAuth-only authentication (Google, GitHub)",
+      "NFR-003: English-only for MVP, translation deferred",
+      "M6.1: Renamed to OAuth-Only Authentication",
+      "M7: Entire milestone deferred to future phase",
+      "M9: Removed M7 dependency"
+    ]
+  }
 }
 ```
 

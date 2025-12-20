@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+backend/venv/
+backend/.venv/
+
+# Build outputs
+build/
+dist/
+.docusaurus/
+.cache-loader/
+
+# Git
+.git/
+.gitignore
+
+# Docker files (don't copy Dockerfiles into image)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Environment and secrets
+.env*
+*.env
+backend/.env
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.mypy_cache/
+.ruff_cache/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation and specs (not needed in runtime)
+specs/
+history/
+.specify/
+
+# Development files
+*.md
+!README.md

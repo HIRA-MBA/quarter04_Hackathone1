@@ -11,6 +11,7 @@ from app.api.deps import get_current_user
 from app.db.postgres import get_db_session
 from app.models.preference import UserPreference
 from app.models.user import User
+from app.services.personalization import PersonalizationService
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -107,6 +108,18 @@ class RecommendationResponse(BaseModel):
     title: str
     reason: str
     difficulty_match: float
+
+
+class DifficultyAdjustmentResponse(BaseModel):
+    """Difficulty adjustment response for personalized content."""
+
+    chapter: int
+    user_level: str
+    chapter_difficulty: str
+    show_advanced_content: bool
+    show_beginner_tips: bool
+    expand_code_examples: bool
+    suggested_pace: str
 
 
 # Routes
@@ -490,3 +503,27 @@ async def get_recommendations(
             break
 
     return recommendations
+
+
+@router.get("/difficulty/{chapter_num}", response_model=DifficultyAdjustmentResponse)
+async def get_difficulty_adjustment(
+    chapter_num: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+) -> DifficultyAdjustmentResponse:
+    """Get difficulty adjustment settings for a specific chapter."""
+    if chapter_num < 1 or chapter_num > 14:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Chapter number must be between 1 and 14",
+        )
+
+    result = await db.execute(
+        select(UserPreference).where(UserPreference.user_id == current_user.id)
+    )
+    preference = result.scalar_one_or_none()
+
+    service = PersonalizationService(db)
+    adjustment = service.get_difficulty_adjustment(chapter_num, preference)
+
+    return DifficultyAdjustmentResponse(**adjustment)
