@@ -1,5 +1,5 @@
 [build]
-builder = "DOCKERFILE"
+builder = "DOCKER"
 dockerfilePath = "Dockerfile"
 watchPatterns = ["app/**", "migrations/**", "requirements.txt", "Dockerfile"]
 
