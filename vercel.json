@@ -4,7 +4,7 @@
   "outputDirectory": "build",
   "framework": "docusaurus-2",
   "installCommand": "npm ci",
-  "regions": ["iad1", "sfo1", "cdg1"],
+  "regions": ["iad1"],
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
