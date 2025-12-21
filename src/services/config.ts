@@ -4,7 +4,7 @@
  */
 
 // Default API URL - will be overridden by Docusaurus context in browser
-let apiUrl = 'https://quarter04hackathone1-production.up.railway.app';
+let apiUrl = 'https://quarter04-hackathone1.onrender.com';
 
 /**
  * Initialize configuration from Docusaurus context.

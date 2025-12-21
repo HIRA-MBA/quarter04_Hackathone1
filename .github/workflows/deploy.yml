@@ -64,8 +64,8 @@ jobs:
       - name: Build for production
         run: npm run build
         env:
-          REACT_APP_API_URL: ${{ vars.API_URL || 'https://quarter04hackathone1-production.up.railway.app' }}
-          REACT_APP_WS_URL: ${{ vars.WS_URL || 'wss://quarter04hackathone1-production.up.railway.app' }}
+          REACT_APP_API_URL: ${{ vars.API_URL || 'https://quarter04-hackathone1.onrender.com' }}
+          REACT_APP_WS_URL: ${{ vars.WS_URL || 'wss://quarter04-hackathone1.onrender.com' }}
           NODE_ENV: production
 
       - name: Upload build artifact

@@ -2,10 +2,13 @@
 Admin API routes for backend management tasks.
 """
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from pydantic import BaseModel
 
+from app.config import get_settings
+
 router = APIRouter(prefix="/admin", tags=["admin"])
+settings = get_settings()
 
 
 class IngestionStatus(BaseModel):

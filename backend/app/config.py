@@ -31,8 +31,13 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     chat_model: str = "gpt-4o-mini"
 
+    # Anthropic (Claude)
+    anthropic_api_key: str = Field(default="")
+    claude_model: str = "claude-sonnet-4-20250514"
+    translation_provider: str = Field(default="openai")  # "openai" or "claude"
+
     # CORS
-    cors_origins: list[str] = Field(default=["http://localhost:3000"])
+    cors_origins: list[str] = Field(default=["http://localhost:3000", "https://quarter04-hackathone1.vercel.app", "https://*.vercel.app"])
 
     # Authentication
     auth_enabled: bool = False

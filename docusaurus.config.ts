@@ -9,7 +9,7 @@ const config: Config = {
 
   // Custom fields accessible via useDocusaurusContext
   customFields: {
-    apiUrl: process.env.API_URL || 'https://quarter04hackathone1-production.up.railway.app',
+    apiUrl: process.env.API_URL || 'https://quarter04-hackathone1.onrender.com',
   },
 
   // Custom head tags for Urdu font support
