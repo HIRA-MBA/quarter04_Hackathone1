@@ -22,6 +22,10 @@ class UserPreference(Base, UUIDMixin, TimestampMixin):
     background: Mapped[str | None] = mapped_column(Text, nullable=True)
     goals: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    # Programming language proficiency (Python, C++, JavaScript)
+    # Format: {"python": "intermediate", "cpp": "beginner", "javascript": "none"}
+    programming_languages: Mapped[dict] = mapped_column(JSONB, default=dict)
+
     # Progress tracking
     completed_chapters: Mapped[dict] = mapped_column(JSONB, default=dict)
     bookmarks: Mapped[dict] = mapped_column(JSONB, default=dict)

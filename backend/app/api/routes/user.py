@@ -17,6 +17,14 @@ router = APIRouter(prefix="/user", tags=["user"])
 
 
 # Request/Response schemas
+class ProgrammingLanguagesSchema(BaseModel):
+    """Programming language proficiency levels."""
+
+    python: str = Field(default="none", pattern="^(none|beginner|intermediate|advanced)$")
+    cpp: str = Field(default="none", pattern="^(none|beginner|intermediate|advanced)$")
+    javascript: str = Field(default="none", pattern="^(none|beginner|intermediate|advanced)$")
+
+
 class QuestionnaireRequest(BaseModel):
     """Background questionnaire request schema."""
 
@@ -35,10 +43,15 @@ class QuestionnaireRequest(BaseModel):
         max_length=2000,
         description="Learning goals and objectives",
     )
+    # Programming language proficiency
+    programming_languages: ProgrammingLanguagesSchema | None = Field(
+        None,
+        description="Programming language proficiency levels",
+    )
     # Additional questionnaire fields
     programming_experience: str | None = Field(
         None,
-        description="Programming languages familiar with",
+        description="Programming languages familiar with (deprecated, use programming_languages)",
     )
     robotics_experience: str | None = Field(
         None,
@@ -82,6 +95,7 @@ class PreferencesResponse(BaseModel):
     experience_level: str | None
     background: str | None
     goals: str | None
+    programming_languages: dict | None
     completed_chapters: dict
     bookmarks: dict
     theme: str
@@ -150,14 +164,19 @@ async def submit_questionnaire(
     preference.background = body.background
     preference.goals = body.goals
 
-    # Store additional responses in a JSON field within background
-    additional_info = {
-        "programming_experience": body.programming_experience,
-        "robotics_experience": body.robotics_experience,
-        "preferred_learning_style": body.preferred_learning_style,
-    }
-    if preference.background:
-        preference.background = f"{body.background}\n\nAdditional: {additional_info}"
+    # Store programming languages proficiency
+    if body.programming_languages:
+        preference.programming_languages = body.programming_languages.model_dump()
+
+    # Store additional responses in background field
+    if body.robotics_experience or body.preferred_learning_style:
+        additional_info = []
+        if body.robotics_experience:
+            additional_info.append(f"Robotics experience: {body.robotics_experience}")
+        if body.preferred_learning_style:
+            additional_info.append(f"Learning style: {body.preferred_learning_style}")
+        if additional_info and preference.background:
+            preference.background = f"{body.background}\n\n{'; '.join(additional_info)}"
 
     await db.commit()
     await db.refresh(preference)
@@ -167,6 +186,7 @@ async def submit_questionnaire(
         experience_level=preference.experience_level,
         background=preference.background,
         goals=preference.goals,
+        programming_languages=preference.programming_languages,
         completed_chapters=preference.completed_chapters or {},
         bookmarks=preference.bookmarks or {},
         theme=preference.theme,
@@ -192,6 +212,7 @@ async def get_preferences(
             experience_level=None,
             background=None,
             goals=None,
+            programming_languages=None,
             completed_chapters={},
             bookmarks={},
             theme="system",
@@ -203,6 +224,7 @@ async def get_preferences(
         experience_level=preference.experience_level,
         background=preference.background,
         goals=preference.goals,
+        programming_languages=preference.programming_languages,
         completed_chapters=preference.completed_chapters or {},
         bookmarks=preference.bookmarks or {},
         theme=preference.theme,
@@ -247,6 +269,7 @@ async def update_preferences(
         experience_level=preference.experience_level,
         background=preference.background,
         goals=preference.goals,
+        programming_languages=preference.programming_languages,
         completed_chapters=preference.completed_chapters or {},
         bookmarks=preference.bookmarks or {},
         theme=preference.theme,
@@ -527,3 +550,111 @@ async def get_difficulty_adjustment(
     adjustment = service.get_difficulty_adjustment(chapter_num, preference)
 
     return DifficultyAdjustmentResponse(**adjustment)
+
+
+class PersonalizeChapterRequest(BaseModel):
+    """Request to personalize chapter introduction."""
+
+    chapter_id: str = Field(..., description="Chapter identifier")
+    chapter_title: str = Field(..., description="Chapter title")
+
+
+class PersonalizeChapterResponse(BaseModel):
+    """Personalized chapter introduction response."""
+
+    chapter_id: str
+    personalized_intro: str
+    user_level: str
+
+
+@router.post("/personalize-chapter", response_model=PersonalizeChapterResponse)
+async def personalize_chapter(
+    body: PersonalizeChapterRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+) -> PersonalizeChapterResponse:
+    """
+    Generate a personalized introduction for a chapter based on user's background.
+
+    Uses AI to create a custom intro that relates chapter content to the user's
+    experience level and known programming languages.
+    """
+    from openai import AsyncOpenAI
+    from app.config import get_settings
+
+    settings = get_settings()
+
+    # Get user preferences
+    result = await db.execute(
+        select(UserPreference).where(UserPreference.user_id == current_user.id)
+    )
+    preference = result.scalar_one_or_none()
+
+    if not preference:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please complete the questionnaire first",
+        )
+
+    # Build context from user preferences
+    user_level = preference.experience_level or "beginner"
+    programming_langs = preference.programming_languages or {}
+    background = preference.background or ""
+
+    known_langs = []
+    for lang, level in programming_langs.items():
+        if level and level != "none":
+            lang_name = {"python": "Python", "cpp": "C++", "javascript": "JavaScript"}.get(
+                lang, lang
+            )
+            known_langs.append(f"{lang_name} ({level})")
+
+    # Create prompt for personalization
+    prompt = f"""Create a brief, personalized introduction (2-3 paragraphs) for a robotics textbook chapter.
+
+Chapter: {body.chapter_title}
+
+User Profile:
+- Experience Level: {user_level}
+- Programming Background: {', '.join(known_langs) if known_langs else 'Not specified'}
+- Background: {background[:200] if background else 'Not specified'}
+
+Guidelines:
+1. Address the user's current skill level
+2. Connect the chapter content to their known programming languages if relevant
+3. Set clear expectations for what they'll learn
+4. Be encouraging and practical
+5. Keep it concise (max 150 words)
+
+Write the introduction directly without any preamble."""
+
+    # Call OpenAI to generate personalized intro
+    client = AsyncOpenAI(api_key=settings.openai_api_key)
+
+    try:
+        response = await client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert robotics educator creating personalized learning experiences.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.7,
+            max_tokens=300,
+        )
+
+        personalized_intro = response.choices[0].message.content or ""
+
+        return PersonalizeChapterResponse(
+            chapter_id=body.chapter_id,
+            personalized_intro=personalized_intro.strip(),
+            user_level=user_level,
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate personalized intro: {str(e)}",
+        )

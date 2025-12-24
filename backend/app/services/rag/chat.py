@@ -30,6 +30,61 @@ Guidelines:
 Remember: Never make up information. Only use what's in the provided context."""
 
 
+def build_personalized_system_prompt(preferences: dict | None) -> str:
+    """Build a personalized system prompt based on user preferences."""
+    base = SYSTEM_PROMPT
+
+    if not preferences:
+        return base
+
+    personalization_lines = ["\n\nUser Personalization (adapt your responses accordingly):"]
+
+    # Experience level adjustments
+    level = preferences.get("experience_level", "beginner")
+
+    if level == "beginner":
+        personalization_lines.extend([
+            "- Use simple, step-by-step explanations",
+            "- Avoid jargon or explain technical terms when used",
+            "- Provide analogies to everyday concepts when helpful",
+            "- Be encouraging and patient with explanations",
+            "- Break down complex concepts into smaller parts",
+        ])
+    elif level == "intermediate":
+        personalization_lines.extend([
+            "- Balance clarity with technical depth",
+            "- Use standard robotics terminology",
+            "- Reference related concepts the user might know",
+            "- Provide context for why things work the way they do",
+        ])
+    else:  # advanced
+        personalization_lines.extend([
+            "- Be concise and technically precise",
+            "- Focus on implementation details and edge cases",
+            "- Reference advanced concepts directly without over-explaining basics",
+            "- Discuss trade-offs and optimization strategies",
+        ])
+
+    # Programming language context
+    langs = preferences.get("programming_languages", {})
+    if langs:
+        known_langs = []
+        for lang, proficiency in langs.items():
+            if proficiency and proficiency != "none":
+                lang_name = {"python": "Python", "cpp": "C++", "javascript": "JavaScript"}.get(
+                    lang, lang
+                )
+                known_langs.append(f"{lang_name} ({proficiency})")
+
+        if known_langs:
+            personalization_lines.append(f"- User knows: {', '.join(known_langs)}")
+            personalization_lines.append(
+                "- When explaining code concepts, relate them to the user's known languages"
+            )
+
+    return base + "\n".join(personalization_lines)
+
+
 @dataclass
 class ChatMessage:
     """A message in a chat conversation."""
@@ -55,6 +110,7 @@ class ConversationContext:
     session_id: str = field(default_factory=lambda: str(uuid4()))
     messages: list[ChatMessage] = field(default_factory=list)
     current_chapter: str | None = None
+    user_preferences: dict | None = None
 
     def add_message(self, role: str, content: str) -> None:
         """Add a message to the conversation."""
@@ -64,7 +120,9 @@ class ConversationContext:
         """Get messages formatted for OpenAI API."""
         messages = []
         if include_system:
-            messages.append({"role": "system", "content": SYSTEM_PROMPT})
+            # Use personalized prompt if preferences are available
+            system_prompt = build_personalized_system_prompt(self.user_preferences)
+            messages.append({"role": "system", "content": system_prompt})
 
         for msg in self.messages[-10:]:  # Keep last 10 messages for context
             messages.append({"role": msg.role, "content": msg.content})
@@ -90,17 +148,22 @@ class ChatService:
         self,
         session_id: str | None = None,
         chapter: str | None = None,
+        user_preferences: dict | None = None,
     ) -> ConversationContext:
         """Get existing conversation or create new one."""
         if session_id and session_id in self._conversations:
             conv = self._conversations[session_id]
             if chapter:
                 conv.current_chapter = chapter
+            # Update preferences if provided
+            if user_preferences:
+                conv.user_preferences = user_preferences
             return conv
 
         conv = ConversationContext(
             session_id=session_id or str(uuid4()),
             current_chapter=chapter,
+            user_preferences=user_preferences,
         )
         self._conversations[conv.session_id] = conv
         return conv
@@ -132,10 +195,11 @@ Please provide a helpful answer based on the textbook content above."""
         query: str,
         session_id: str | None = None,
         chapter: str | None = None,
+        user_preferences: dict | None = None,
     ) -> ChatResponse:
         """Process a chat message and return response."""
         # Get or create conversation
-        conv = self.get_or_create_conversation(session_id, chapter)
+        conv = self.get_or_create_conversation(session_id, chapter, user_preferences)
 
         # Retrieve relevant context
         sources, context = self.embeddings_service.search_with_context(
@@ -180,10 +244,11 @@ Please provide a helpful answer based on the textbook content above."""
         query: str,
         session_id: str | None = None,
         chapter: str | None = None,
+        user_preferences: dict | None = None,
     ) -> AsyncIterator[str]:
         """Process a chat message and stream the response."""
         # Get or create conversation
-        conv = self.get_or_create_conversation(session_id, chapter)
+        conv = self.get_or_create_conversation(session_id, chapter, user_preferences)
 
         # Retrieve relevant context
         sources, context = self.embeddings_service.search_with_context(

@@ -13,8 +13,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.postgres import get_session_maker
+from app.api.deps import get_current_user_optional
+from app.db.postgres import get_db_session, get_session_maker
+from app.models.preference import UserPreference
+from app.models.user import User
 from app.services.rag.chat import ChatService, get_chat_service
 from app.services.rag.embeddings import EmbeddingsService, get_embeddings_service
 
@@ -81,18 +86,49 @@ def get_embeddings_svc() -> EmbeddingsService:
     return get_embeddings_service()
 
 
+# Helper to get user preferences
+async def get_user_preferences(
+    db: AsyncSession,
+    user: User | None,
+) -> dict | None:
+    """Get user preferences for personalization."""
+    if not user:
+        return None
+
+    result = await db.execute(
+        select(UserPreference).where(UserPreference.user_id == user.id)
+    )
+    preference = result.scalar_one_or_none()
+
+    if not preference:
+        return None
+
+    return {
+        "experience_level": preference.experience_level,
+        "programming_languages": preference.programming_languages,
+        "background": preference.background,
+    }
+
+
 # Routes
 @router.post("", response_model=ChatResponse)
 async def send_message(
     request: ChatRequest,
     chat_service: Annotated[ChatService, Depends(get_chat_svc)],
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+    current_user: Annotated[User | None, Depends(get_current_user_optional)] = None,
 ):
     """
     Send a message to the RAG chatbot.
 
     The chatbot will search the textbook content for relevant information
     and generate a response based on the retrieved context.
+
+    If authenticated, responses will be personalized based on user preferences.
     """
+    # Get user preferences for personalization
+    user_preferences = await get_user_preferences(db, current_user)
+
     if request.stream:
         # Return streaming response
         async def generate():
@@ -100,6 +136,7 @@ async def send_message(
                 query=request.message,
                 session_id=request.session_id,
                 chapter=request.chapter,
+                user_preferences=user_preferences,
             ):
                 yield chunk
 
@@ -113,6 +150,7 @@ async def send_message(
         query=request.message,
         session_id=request.session_id,
         chapter=request.chapter,
+        user_preferences=user_preferences,
     )
 
     return ChatResponse(
@@ -135,18 +173,24 @@ async def send_message(
 async def send_message_stream(
     request: ChatRequest,
     chat_service: Annotated[ChatService, Depends(get_chat_svc)],
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+    current_user: Annotated[User | None, Depends(get_current_user_optional)] = None,
 ):
     """
     Send a message and receive a streaming response.
 
     This endpoint always streams the response, regardless of the `stream` field.
+    If authenticated, responses will be personalized based on user preferences.
     """
+    # Get user preferences for personalization
+    user_preferences = await get_user_preferences(db, current_user)
 
     async def generate():
         async for chunk in chat_service.chat_stream(
             query=request.message,
             session_id=request.session_id,
             chapter=request.chapter,
+            user_preferences=user_preferences,
         ):
             yield chunk
 
