@@ -617,8 +617,8 @@ Chapter: {body.chapter_title}
 
 User Profile:
 - Experience Level: {user_level}
-- Programming Background: {', '.join(known_langs) if known_langs else 'Not specified'}
-- Background: {background[:200] if background else 'Not specified'}
+- Programming Background: {", ".join(known_langs) if known_langs else "Not specified"}
+- Background: {background[:200] if background else "Not specified"}
 
 Guidelines:
 1. Address the user's current skill level

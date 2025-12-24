@@ -43,27 +43,33 @@ def build_personalized_system_prompt(preferences: dict | None) -> str:
     level = preferences.get("experience_level", "beginner")
 
     if level == "beginner":
-        personalization_lines.extend([
-            "- Use simple, step-by-step explanations",
-            "- Avoid jargon or explain technical terms when used",
-            "- Provide analogies to everyday concepts when helpful",
-            "- Be encouraging and patient with explanations",
-            "- Break down complex concepts into smaller parts",
-        ])
+        personalization_lines.extend(
+            [
+                "- Use simple, step-by-step explanations",
+                "- Avoid jargon or explain technical terms when used",
+                "- Provide analogies to everyday concepts when helpful",
+                "- Be encouraging and patient with explanations",
+                "- Break down complex concepts into smaller parts",
+            ]
+        )
     elif level == "intermediate":
-        personalization_lines.extend([
-            "- Balance clarity with technical depth",
-            "- Use standard robotics terminology",
-            "- Reference related concepts the user might know",
-            "- Provide context for why things work the way they do",
-        ])
+        personalization_lines.extend(
+            [
+                "- Balance clarity with technical depth",
+                "- Use standard robotics terminology",
+                "- Reference related concepts the user might know",
+                "- Provide context for why things work the way they do",
+            ]
+        )
     else:  # advanced
-        personalization_lines.extend([
-            "- Be concise and technically precise",
-            "- Focus on implementation details and edge cases",
-            "- Reference advanced concepts directly without over-explaining basics",
-            "- Discuss trade-offs and optimization strategies",
-        ])
+        personalization_lines.extend(
+            [
+                "- Be concise and technically precise",
+                "- Focus on implementation details and edge cases",
+                "- Reference advanced concepts directly without over-explaining basics",
+                "- Discuss trade-offs and optimization strategies",
+            ]
+        )
 
     # Programming language context
     langs = preferences.get("programming_languages", {})

@@ -37,7 +37,13 @@ class Settings(BaseSettings):
     translation_provider: str = Field(default="openai")  # "openai" or "claude"
 
     # CORS
-    cors_origins: list[str] = Field(default=["http://localhost:3000", "https://quarter04-hackathone1.vercel.app", "https://*.vercel.app"])
+    cors_origins: list[str] = Field(
+        default=[
+            "http://localhost:3000",
+            "https://quarter04-hackathone1.vercel.app",
+            "https://*.vercel.app",
+        ]
+    )
 
     # Authentication
     auth_enabled: bool = False

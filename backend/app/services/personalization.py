@@ -69,15 +69,10 @@ class PersonalizationService:
         """Extract list of completed chapter numbers."""
         if not preferences or not preferences.completed_chapters:
             return []
-        return [
-            int(ch) for ch, completed in preferences.completed_chapters.items()
-            if completed
-        ]
+        return [int(ch) for ch, completed in preferences.completed_chapters.items() if completed]
 
     def get_next_recommended_chapters(
-        self,
-        preferences: UserPreference | None,
-        limit: int = 3
+        self, preferences: UserPreference | None, limit: int = 3
     ) -> list[dict]:
         """Get recommended next chapters based on progress."""
         completed = set(self.get_completed_chapters(preferences))
@@ -100,28 +95,24 @@ class PersonalizationService:
             difficulty = CHAPTER_DIFFICULTY.get(chapter, "intermediate")
 
             # Calculate priority score
-            priority = self._calculate_priority(
-                chapter, difficulty, experience_level, completed
-            )
+            priority = self._calculate_priority(chapter, difficulty, experience_level, completed)
 
-            recommendations.append({
-                "chapter": chapter,
-                "difficulty": difficulty,
-                "prerequisites_met": True,
-                "priority": priority,
-                "module": self._get_module_for_chapter(chapter),
-            })
+            recommendations.append(
+                {
+                    "chapter": chapter,
+                    "difficulty": difficulty,
+                    "prerequisites_met": True,
+                    "priority": priority,
+                    "module": self._get_module_for_chapter(chapter),
+                }
+            )
 
         # Sort by priority and return top recommendations
         recommendations.sort(key=lambda x: x["priority"], reverse=True)
         return recommendations[:limit]
 
     def _calculate_priority(
-        self,
-        chapter: int,
-        difficulty: str,
-        experience_level: str,
-        completed: set[int]
+        self, chapter: int, difficulty: str, experience_level: str, completed: set[int]
     ) -> float:
         """Calculate recommendation priority score."""
         priority = 10.0
@@ -132,9 +123,7 @@ class PersonalizationService:
             "intermediate": {"beginner": 0.8, "intermediate": 1.5, "advanced": 1.0},
             "advanced": {"beginner": 0.5, "intermediate": 1.0, "advanced": 1.5},
         }
-        level_multiplier = difficulty_match.get(
-            experience_level, {}
-        ).get(difficulty, 1.0)
+        level_multiplier = difficulty_match.get(experience_level, {}).get(difficulty, 1.0)
         priority *= level_multiplier
 
         # Prefer sequential progression within modules
@@ -160,11 +149,7 @@ class PersonalizationService:
                 return module
         return None
 
-    def get_difficulty_adjustment(
-        self,
-        chapter: int,
-        preferences: UserPreference | None
-    ) -> dict:
+    def get_difficulty_adjustment(self, chapter: int, preferences: UserPreference | None) -> dict:
         """Get content difficulty adjustment for a chapter."""
         experience_level = preferences.experience_level if preferences else "beginner"
         chapter_difficulty = CHAPTER_DIFFICULTY.get(chapter, "intermediate")
@@ -209,9 +194,7 @@ class PersonalizationService:
                 return "fast"
 
     def get_learning_path(
-        self,
-        preferences: UserPreference | None,
-        target_chapter: int | None = None
+        self, preferences: UserPreference | None, target_chapter: int | None = None
     ) -> list[dict]:
         """Get optimal learning path to reach a target chapter or complete the book."""
         completed = set(self.get_completed_chapters(preferences))
@@ -235,20 +218,19 @@ class PersonalizationService:
         ordered = sorted(to_complete)
 
         for chapter in ordered:
-            path.append({
-                "chapter": chapter,
-                "difficulty": CHAPTER_DIFFICULTY.get(chapter, "intermediate"),
-                "module": self._get_module_for_chapter(chapter),
-                "is_capstone": chapter in [5, 7, 14],
-            })
+            path.append(
+                {
+                    "chapter": chapter,
+                    "difficulty": CHAPTER_DIFFICULTY.get(chapter, "intermediate"),
+                    "module": self._get_module_for_chapter(chapter),
+                    "is_capstone": chapter in [5, 7, 14],
+                }
+            )
 
         return path
 
     async def update_chapter_completion(
-        self,
-        user_id: UUID,
-        chapter: int,
-        completed: bool = True
+        self, user_id: UUID, chapter: int, completed: bool = True
     ) -> UserPreference | None:
         """Update chapter completion status."""
         preferences = await self.get_user_preferences(user_id)

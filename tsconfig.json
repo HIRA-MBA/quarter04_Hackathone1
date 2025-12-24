@@ -4,5 +4,5 @@
   "compilerOptions": {
     "baseUrl": "."
   },
-  "exclude": [".docusaurus", "build"]
+  "exclude": [".docusaurus", "build", "e2e", "playwright.config.ts"]
 }

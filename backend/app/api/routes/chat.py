@@ -95,9 +95,7 @@ async def get_user_preferences(
     if not user:
         return None
 
-    result = await db.execute(
-        select(UserPreference).where(UserPreference.user_id == user.id)
-    )
+    result = await db.execute(select(UserPreference).where(UserPreference.user_id == user.id))
     preference = result.scalar_one_or_none()
 
     if not preference:
