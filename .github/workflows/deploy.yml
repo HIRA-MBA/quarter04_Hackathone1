@@ -212,8 +212,47 @@ jobs:
         run: |
           cd backend
           # Show current migration state for debugging
-          alembic current || true
-          # Apply all pending migrations
+          echo "Current migration state:"
+          alembic current || echo "No migrations applied yet"
+
+          # Check if alembic_version table exists and handle legacy state
+          python -c "
+          import os
+          from sqlalchemy import create_engine, text
+
+          db_url = os.environ['DATABASE_URL']
+          # Handle Railway's postgres:// vs postgresql://
+          if db_url.startswith('postgres://'):
+              db_url = db_url.replace('postgres://', 'postgresql://', 1)
+
+          engine = create_engine(db_url)
+          with engine.connect() as conn:
+              # Check if alembic_version table exists
+              result = conn.execute(text(\"\"\"
+                  SELECT EXISTS (
+                      SELECT FROM information_schema.tables
+                      WHERE table_name = 'alembic_version'
+                  )
+              \"\"\"))
+              table_exists = result.scalar()
+
+              if table_exists:
+                  # Get current version
+                  result = conn.execute(text('SELECT version_num FROM alembic_version'))
+                  versions = [row[0] for row in result]
+                  print(f'Current versions in DB: {versions}')
+
+                  # If old migration is there, update to new consolidated one
+                  if '002_add_programming_languages' in versions or '001_initial_schema' in versions:
+                      conn.execute(text('DELETE FROM alembic_version'))
+                      conn.execute(text(\"INSERT INTO alembic_version (version_num) VALUES ('001_initial_schema')\"))
+                      conn.commit()
+                      print('Reset migration state to 001_initial_schema')
+              else:
+                  print('No alembic_version table - fresh database')
+          " || echo "Migration state check completed"
+
+          # Apply migrations
           alembic upgrade head
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

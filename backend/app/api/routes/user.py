@@ -580,6 +580,7 @@ async def personalize_chapter(
     experience level and known programming languages.
     """
     from openai import AsyncOpenAI
+
     from app.config import get_settings
 
     settings = get_settings()
@@ -657,4 +658,4 @@ Write the introduction directly without any preamble."""
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate personalized intro: {str(e)}",
-        )
+        ) from e

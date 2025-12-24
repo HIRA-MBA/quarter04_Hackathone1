@@ -2,7 +2,7 @@
 Admin API routes for backend management tasks.
 """
 
-from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 from pydantic import BaseModel
 
 from app.config import get_settings

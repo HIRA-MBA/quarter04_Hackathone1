@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import text
+
 from app.models.base import Base, TimestampMixin, UUIDMixin
 
 
@@ -24,10 +24,10 @@ class UserPreference(Base, UUIDMixin, TimestampMixin):
 
     # Programming language proficiency (Python, C++, JavaScript)
     # Format: {"python": "intermediate", "cpp": "beginner", "javascript": "none"}
-    
+
     programming_languages: Mapped[dict] = mapped_column(
-    JSONB, 
-    default=dict, 
+    JSONB,
+    default=dict,
     server_default=text("'{}'::jsonb") # This makes Alembic happy
 )
     # Progress tracking

@@ -43,7 +43,6 @@ export default function TranslateButton({
       }
 
       // Get text content for translation (excluding code blocks and buttons)
-      const textNodes: { element: Element; originalText: string }[] = [];
       const walker = document.createTreeWalker(
         contentElement,
         NodeFilter.SHOW_ELEMENT,

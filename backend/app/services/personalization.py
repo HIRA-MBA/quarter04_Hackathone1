@@ -1,13 +1,11 @@
 """Personalization service for chapter recommendations and difficulty adjustment."""
 
-from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.preference import UserPreference
-
 
 # Chapter dependencies and prerequisites
 CHAPTER_PREREQUISITES = {
@@ -60,14 +58,14 @@ class PersonalizationService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_user_preferences(self, user_id: UUID) -> Optional[UserPreference]:
+    async def get_user_preferences(self, user_id: UUID) -> UserPreference | None:
         """Get user preferences by user ID."""
         result = await self.db.execute(
             select(UserPreference).where(UserPreference.user_id == user_id)
         )
         return result.scalar_one_or_none()
 
-    def get_completed_chapters(self, preferences: Optional[UserPreference]) -> list[int]:
+    def get_completed_chapters(self, preferences: UserPreference | None) -> list[int]:
         """Extract list of completed chapter numbers."""
         if not preferences or not preferences.completed_chapters:
             return []
@@ -78,7 +76,7 @@ class PersonalizationService:
 
     def get_next_recommended_chapters(
         self,
-        preferences: Optional[UserPreference],
+        preferences: UserPreference | None,
         limit: int = 3
     ) -> list[dict]:
         """Get recommended next chapters based on progress."""
@@ -155,7 +153,7 @@ class PersonalizationService:
 
         return round(priority, 2)
 
-    def _get_module_for_chapter(self, chapter: int) -> Optional[int]:
+    def _get_module_for_chapter(self, chapter: int) -> int | None:
         """Get the module number for a chapter."""
         for module, chapters in MODULES.items():
             if chapter in chapters:
@@ -165,7 +163,7 @@ class PersonalizationService:
     def get_difficulty_adjustment(
         self,
         chapter: int,
-        preferences: Optional[UserPreference]
+        preferences: UserPreference | None
     ) -> dict:
         """Get content difficulty adjustment for a chapter."""
         experience_level = preferences.experience_level if preferences else "beginner"
@@ -212,8 +210,8 @@ class PersonalizationService:
 
     def get_learning_path(
         self,
-        preferences: Optional[UserPreference],
-        target_chapter: Optional[int] = None
+        preferences: UserPreference | None,
+        target_chapter: int | None = None
     ) -> list[dict]:
         """Get optimal learning path to reach a target chapter or complete the book."""
         completed = set(self.get_completed_chapters(preferences))
@@ -251,7 +249,7 @@ class PersonalizationService:
         user_id: UUID,
         chapter: int,
         completed: bool = True
-    ) -> Optional[UserPreference]:
+    ) -> UserPreference | None:
         """Update chapter completion status."""
         preferences = await self.get_user_preferences(user_id)
         if not preferences:
@@ -266,7 +264,7 @@ class PersonalizationService:
 
         return preferences
 
-    def get_progress_summary(self, preferences: Optional[UserPreference]) -> dict:
+    def get_progress_summary(self, preferences: UserPreference | None) -> dict:
         """Get overall progress summary."""
         completed = self.get_completed_chapters(preferences)
         total_chapters = 14

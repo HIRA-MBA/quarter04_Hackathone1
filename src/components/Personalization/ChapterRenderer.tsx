@@ -314,7 +314,7 @@ export default function ChapterRenderer({
         {difficultyContextValue.showBeginnerTips && (
           <div className={styles.beginnerTipsBanner}>
             <strong>Tip:</strong> This chapter includes expanded explanations and examples.
-            Don't hesitate to use the chatbot if you need help!
+            Don&apos;t hesitate to use the chatbot if you need help!
           </div>
         )}
 

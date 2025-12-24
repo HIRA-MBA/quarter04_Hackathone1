@@ -2,7 +2,7 @@
 
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,8 +10,8 @@ from app.api.deps import check_rate_limit, get_current_user_optional
 from app.config import get_settings
 from app.db.postgres import get_db_session
 from app.models.user import User
-from app.services.translation import TranslationService
 from app.services.claude_translation import ClaudeTranslationService
+from app.services.translation import TranslationService
 
 router = APIRouter(prefix="/translation", tags=["translation"])
 settings = get_settings()

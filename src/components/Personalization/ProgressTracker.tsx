@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { authApi } from '../../services/auth';
-import { userApi, ProgressSummary, UserPreferences } from '../../services/user';
+import { userApi, ProgressSummary } from '../../services/user';
 import styles from './ProgressTracker.module.css';
 
 interface ProgressTrackerProps {
@@ -33,7 +33,6 @@ export default function ProgressTracker({
 }: ProgressTrackerProps): React.ReactElement | null {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [progress, setProgress] = useState<ProgressSummary | null>(null);
-  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [moduleProgress, setModuleProgress] = useState<ModuleProgress[]>(MODULES);
 
   useEffect(() => {
@@ -47,7 +46,6 @@ export default function ProgressTracker({
             userApi.getPreferences(),
           ]);
           setProgress(prog);
-          setPreferences(prefs);
 
           // Calculate module-level progress
           if (prefs?.completed_chapters) {

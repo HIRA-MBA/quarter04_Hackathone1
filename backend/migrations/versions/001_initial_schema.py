@@ -94,6 +94,13 @@ def upgrade() -> None:
         sa.Column("background", sa.Text(), nullable=True),
         sa.Column("goals", sa.Text(), nullable=True),
         sa.Column(
+            "programming_languages",
+            postgresql.JSONB(),
+            nullable=True,
+            server_default=sa.text("'{}'::jsonb"),
+            comment='Programming language proficiency: {python: level, cpp: level, javascript: level}'
+        ),
+        sa.Column(
             "completed_chapters", postgresql.JSONB(), nullable=False, server_default=sa.text("'{}'::jsonb")
         ),
         sa.Column("bookmarks", postgresql.JSONB(), nullable=False, server_default=sa.text("'{}'::jsonb")),
