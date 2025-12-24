@@ -3,6 +3,7 @@
  */
 
 import { getApiUrl } from './config';
+import { authApi } from './auth';
 
 export interface ChatSource {
   chapter: string;
@@ -49,7 +50,18 @@ class ChatApiClient {
   }
 
   /**
+   * Get headers including auth token if available.
+   */
+  private getHeaders(): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      ...authApi.getAuthHeaders(),
+    };
+  }
+
+  /**
    * Send a chat message and get a response.
+   * Includes auth headers for personalized responses if logged in.
    */
   async sendMessage(
     message: string,
@@ -57,9 +69,7 @@ class ChatApiClient {
   ): Promise<ChatResponse> {
     const response = await fetch(`${this.baseUrl}/api/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: this.getHeaders(),
       body: JSON.stringify({
         message,
         session_id: this.sessionId,
@@ -80,6 +90,7 @@ class ChatApiClient {
 
   /**
    * Send a chat message and receive a streaming response.
+   * Includes auth headers for personalized responses if logged in.
    */
   async *sendMessageStream(
     message: string,
@@ -87,9 +98,7 @@ class ChatApiClient {
   ): AsyncGenerator<string, void, unknown> {
     const response = await fetch(`${this.baseUrl}/api/chat/stream`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: this.getHeaders(),
       body: JSON.stringify({
         message,
         session_id: this.sessionId,

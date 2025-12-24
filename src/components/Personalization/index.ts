@@ -7,6 +7,7 @@ export { default as ChapterRenderer, useDifficultyAdjustment } from './ChapterRe
 export { default as ProgressTracker } from './ProgressTracker';
 export { default as RecommendationSidebar } from './RecommendationSidebar';
 export { default as BackgroundQuestionnaire } from './BackgroundQuestionnaire';
+export { default as PersonalizeChapter } from './PersonalizeChapter';
 export {
   AdvancedContent,
   BeginnerTip,

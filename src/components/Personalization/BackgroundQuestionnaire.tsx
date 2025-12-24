@@ -20,6 +20,11 @@ const STEPS: Step[] = [
     description: 'What is your current experience with robotics and programming?',
   },
   {
+    id: 'languages',
+    title: 'Programming Languages',
+    description: 'What programming languages are you familiar with?',
+  },
+  {
     id: 'background',
     title: 'Your Background',
     description: 'Tell us about your educational and professional background.',
@@ -29,6 +34,27 @@ const STEPS: Step[] = [
     title: 'Learning Goals',
     description: 'What do you hope to achieve with this course?',
   },
+];
+
+type ProficiencyLevel = 'none' | 'beginner' | 'intermediate' | 'advanced';
+
+interface ProgrammingLanguages {
+  python: ProficiencyLevel;
+  cpp: ProficiencyLevel;
+  javascript: ProficiencyLevel;
+}
+
+const LANGUAGE_OPTIONS = [
+  { id: 'python', label: 'Python', description: 'Used extensively in ROS 2 and AI/ML' },
+  { id: 'cpp', label: 'C++', description: 'Core language for robotics and performance-critical code' },
+  { id: 'javascript', label: 'JavaScript', description: 'Web development and visualization tools' },
+];
+
+const PROFICIENCY_OPTIONS: { value: ProficiencyLevel; label: string }[] = [
+  { value: 'none', label: 'No experience' },
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
 ];
 
 const EXPERIENCE_OPTIONS = [
@@ -69,6 +95,11 @@ export default function BackgroundQuestionnaire(): React.ReactElement {
     programming_experience: '',
     robotics_experience: '',
     preferred_learning_style: '',
+    programming_languages: {
+      python: 'none',
+      cpp: 'none',
+      javascript: 'none',
+    },
   });
 
   const handleExperienceSelect = (value: 'beginner' | 'intermediate' | 'advanced') => {
@@ -79,13 +110,31 @@ export default function BackgroundQuestionnaire(): React.ReactElement {
     setFormData({ ...formData, [field]: value });
   };
 
+  const handleLanguageProficiencyChange = (
+    language: keyof ProgrammingLanguages,
+    level: ProficiencyLevel
+  ) => {
+    setFormData({
+      ...formData,
+      programming_languages: {
+        ...formData.programming_languages,
+        [language]: level,
+      },
+    });
+  };
+
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 0:
         return !!formData.experience_level;
       case 1:
-        return formData.background.length >= 20;
+        // At least one language should be selected (not 'none')
+        return Object.values(formData.programming_languages || {}).some(
+          (level) => level !== 'none'
+        );
       case 2:
+        return formData.background.length >= 20;
+      case 3:
         return formData.goals.length >= 20;
       default:
         return true;
@@ -148,6 +197,50 @@ export default function BackgroundQuestionnaire(): React.ReactElement {
       case 1:
         return (
           <div className={styles.form}>
+            <p style={{ marginBottom: '1rem', color: 'var(--ifm-color-emphasis-700)', fontSize: '0.9rem' }}>
+              Select your proficiency level for each language. This helps us personalize explanations in the textbook.
+            </p>
+            {LANGUAGE_OPTIONS.map((lang) => (
+              <div key={lang.id} className={styles.formGroup} style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <strong>{lang.label}</strong>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--ifm-color-emphasis-600)' }}>
+                    {lang.description}
+                  </span>
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                  {PROFICIENCY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleLanguageProficiencyChange(lang.id as keyof ProgrammingLanguages, opt.value)}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.85rem',
+                        border: '1px solid var(--ifm-color-emphasis-300)',
+                        borderRadius: '6px',
+                        background: formData.programming_languages?.[lang.id as keyof ProgrammingLanguages] === opt.value
+                          ? 'var(--ifm-color-primary)'
+                          : 'var(--ifm-color-emphasis-100)',
+                        color: formData.programming_languages?.[lang.id as keyof ProgrammingLanguages] === opt.value
+                          ? 'white'
+                          : 'var(--ifm-font-color-base)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className={styles.form}>
             <div className={styles.formGroup}>
               <label htmlFor="background">Educational/Professional Background</label>
               <textarea
@@ -156,17 +249,6 @@ export default function BackgroundQuestionnaire(): React.ReactElement {
                 onChange={(e) => handleInputChange('background', e.target.value)}
                 placeholder="e.g., Computer Science student, Mechanical Engineer with 3 years experience..."
                 rows={3}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="programmingExp">Programming Languages (optional)</label>
-              <input
-                type="text"
-                id="programmingExp"
-                value={formData.programming_experience || ''}
-                onChange={(e) => handleInputChange('programming_experience', e.target.value)}
-                placeholder="e.g., Python, C++, ROS 2"
               />
             </div>
 
@@ -183,7 +265,7 @@ export default function BackgroundQuestionnaire(): React.ReactElement {
           </div>
         );
 
-      case 2:
+      case 3:
         return (
           <div className={styles.form}>
             <div className={styles.formGroup}>

@@ -145,6 +145,10 @@ const config: Config = {
           label: 'GitHub',
           position: 'right',
         },
+        {
+          type: 'custom-signInButton',
+          position: 'right',
+        },
       ],
     },
     footer: {

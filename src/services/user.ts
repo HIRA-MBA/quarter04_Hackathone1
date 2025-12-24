@@ -6,6 +6,14 @@ import { authApi } from './auth';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
+export type ProficiencyLevel = 'none' | 'beginner' | 'intermediate' | 'advanced';
+
+export interface ProgrammingLanguages {
+  python: ProficiencyLevel;
+  cpp: ProficiencyLevel;
+  javascript: ProficiencyLevel;
+}
+
 export interface QuestionnaireData {
   experience_level: 'beginner' | 'intermediate' | 'advanced';
   background: string;
@@ -13,6 +21,7 @@ export interface QuestionnaireData {
   programming_experience?: string;
   robotics_experience?: string;
   preferred_learning_style?: string;
+  programming_languages?: ProgrammingLanguages;
 }
 
 export interface UserPreferences {
@@ -20,6 +29,7 @@ export interface UserPreferences {
   experience_level: string | null;
   background: string | null;
   goals: string | null;
+  programming_languages: ProgrammingLanguages | null;
   completed_chapters: Record<string, ChapterProgress>;
   bookmarks: Record<string, Bookmark>;
   theme: string;
@@ -249,6 +259,33 @@ class UserApiClient {
 
     if (!response.ok) {
       throw new Error('Failed to get difficulty adjustment');
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get personalized chapter introduction.
+   */
+  async getPersonalizedIntro(
+    chapterId: string,
+    chapterTitle: string
+  ): Promise<{ chapter_id: string; personalized_intro: string; user_level: string }> {
+    const response = await fetch(`${this.baseUrl}/api/user/personalize-chapter`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authApi.getAuthHeaders(),
+      },
+      body: JSON.stringify({
+        chapter_id: chapterId,
+        chapter_title: chapterTitle,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Failed to personalize' }));
+      throw new Error(error.detail || 'Failed to get personalized introduction');
     }
 
     return response.json();
