@@ -206,9 +206,14 @@ jobs:
           cd backend
           pip install -r requirements.txt
 
+     
+
       - name: Run Alembic migrations
         run: |
           cd backend
+          # This forces the DB to sync its history with your first file
+          alembic stamp 001_initial_schema
+          # This applies the new changes from your second file
           alembic upgrade head
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
