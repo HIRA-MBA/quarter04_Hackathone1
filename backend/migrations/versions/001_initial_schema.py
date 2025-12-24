@@ -94,9 +94,9 @@ def upgrade() -> None:
         sa.Column("background", sa.Text(), nullable=True),
         sa.Column("goals", sa.Text(), nullable=True),
         sa.Column(
-            "completed_chapters", postgresql.JSONB(), nullable=False, server_default="{}"
+            "completed_chapters", postgresql.JSONB(), nullable=False, server_default=sa.text("'{}'::jsonb")
         ),
-        sa.Column("bookmarks", postgresql.JSONB(), nullable=False, server_default="{}"),
+        sa.Column("bookmarks", postgresql.JSONB(), nullable=False, server_default=sa.text("'{}'::jsonb")),
         sa.Column("theme", sa.String(20), nullable=False, server_default="system"),
         sa.Column("font_size", sa.String(20), nullable=False, server_default="medium"),
         sa.Column(
@@ -127,7 +127,7 @@ def upgrade() -> None:
         sa.Column("role", sa.String(20), nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
         sa.Column("chapter", sa.String(100), nullable=True),
-        sa.Column("sources", postgresql.JSONB(), nullable=False, server_default="[]"),
+        sa.Column("sources", postgresql.JSONB(), nullable=False, server_default=sa.text("'[]'::jsonb")),
         sa.Column("feedback_rating", sa.Integer(), nullable=True),
         sa.Column("feedback_text", sa.Text(), nullable=True),
         sa.Column(

@@ -10,6 +10,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
 revision: str = '002_add_programming_languages'
@@ -26,7 +27,7 @@ def upgrade() -> None:
             'programming_languages',
             postgresql.JSONB(astext_type=sa.Text()),
             nullable=True,
-            server_default='{}',
+            server_default=text("'{}'::jsonb"),
             comment='Programming language proficiency: {python: level, cpp: level, javascript: level}'
         )
     )
