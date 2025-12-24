@@ -211,9 +211,9 @@ jobs:
       - name: Run Alembic migrations
         run: |
           cd backend
-          # This forces the DB to sync its history with your first file
-          alembic stamp 001_initial_schema
-          # This applies the new changes from your second file
+          # Show current migration state for debugging
+          alembic current || true
+          # Apply all pending migrations
           alembic upgrade head
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
