@@ -290,7 +290,7 @@ async def get_stats(
 async def diagnostic():
     """
     Diagnostic endpoint to check service configuration.
-    Returns status of OpenAI, Qdrant, and other dependencies.
+    Returns status of OpenAI, Qdrant, Database, and other dependencies.
     """
     from app.config import get_settings
 
@@ -298,6 +298,7 @@ async def diagnostic():
     results = {
         "openai": {"status": "unknown", "model": settings.chat_model},
         "qdrant": {"status": "unknown", "collection": settings.qdrant_collection},
+        "database": {"status": "unknown"},
         "config": {
             "debug": settings.debug,
             "embedding_model": settings.embedding_model,
@@ -340,6 +341,22 @@ async def diagnostic():
     except Exception as e:
         results["qdrant"]["status"] = "error"
         results["qdrant"]["error"] = f"{type(e).__name__}: {str(e)}"
+
+    # Check Database connection
+    try:
+        from sqlalchemy import text
+
+        from app.db.postgres import get_session_maker
+
+        session_maker = get_session_maker()
+        async with session_maker() as session:
+            result = await session.execute(text("SELECT 1"))
+            result.scalar()
+        results["database"]["status"] = "ok"
+        results["database"]["url_prefix"] = settings.database_url[:30] + "..."
+    except Exception as e:
+        results["database"]["status"] = "error"
+        results["database"]["error"] = f"{type(e).__name__}: {str(e)}"
 
     return results
 
