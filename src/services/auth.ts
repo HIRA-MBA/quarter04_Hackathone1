@@ -2,7 +2,7 @@
  * Authentication API client for user signup, signin, and session management.
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import { getApiUrl } from './config';
 
 // Token storage keys
 const ACCESS_TOKEN_KEY = 'physical_ai_access_token';
@@ -35,10 +35,8 @@ export interface SigninRequest {
 }
 
 class AuthApiClient {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
+  private get baseUrl(): string {
+    return getApiUrl();
   }
 
   /**
