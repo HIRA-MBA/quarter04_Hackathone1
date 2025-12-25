@@ -25,14 +25,23 @@ class AuthService:
         self.db = db
 
     @staticmethod
+    def _truncate_password(password: str) -> str:
+        """Truncate password to 72 bytes for bcrypt compatibility."""
+        # bcrypt has a 72-byte limit, encode and truncate safely
+        password_bytes = password.encode("utf-8")[:72]
+        return password_bytes.decode("utf-8", errors="ignore")
+
+    @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         """Verify a password against its hash."""
-        return pwd_context.verify(plain_password, hashed_password)
+        truncated = AuthService._truncate_password(plain_password)
+        return pwd_context.verify(truncated, hashed_password)
 
     @staticmethod
     def get_password_hash(password: str) -> str:
         """Hash a password."""
-        return pwd_context.hash(password)
+        truncated = AuthService._truncate_password(password)
+        return pwd_context.hash(truncated)
 
     @staticmethod
     def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
