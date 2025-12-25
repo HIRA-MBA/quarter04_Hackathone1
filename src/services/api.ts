@@ -67,25 +67,39 @@ class ChatApiClient {
     message: string,
     chapter?: string
   ): Promise<ChatResponse> {
-    const response = await fetch(`${this.baseUrl}/api/chat`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify({
-        message,
-        session_id: this.sessionId,
-        chapter,
-        stream: false,
-      } as ChatRequest),
-    });
+    try {
+      const response = await fetch(`${this.baseUrl}/api/chat`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({
+          message,
+          session_id: this.sessionId,
+          chapter,
+          stream: false,
+        } as ChatRequest),
+      });
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Chat API error: ${response.status} - ${error}`);
+      if (!response.ok) {
+        let errorDetail = `HTTP ${response.status}`;
+        try {
+          const errorJson = await response.json();
+          errorDetail = errorJson.detail || errorJson.message || errorDetail;
+        } catch {
+          const errorText = await response.text();
+          if (errorText) errorDetail = errorText;
+        }
+        throw new Error(errorDetail);
+      }
+
+      const data: ChatResponse = await response.json();
+      this.sessionId = data.session_id;
+      return data;
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Cannot connect to server. Please check if the backend is running.');
+      }
+      throw error;
     }
-
-    const data: ChatResponse = await response.json();
-    this.sessionId = data.session_id;
-    return data;
   }
 
   /**

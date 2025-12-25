@@ -124,47 +124,58 @@ async def send_message(
 
     If authenticated, responses will be personalized based on user preferences.
     """
-    # Get user preferences for personalization
-    user_preferences = await get_user_preferences(db, current_user)
+    try:
+        # Get user preferences for personalization
+        user_preferences = await get_user_preferences(db, current_user)
 
-    if request.stream:
-        # Return streaming response
-        async def generate():
-            async for chunk in chat_service.chat_stream(
-                query=request.message,
-                session_id=request.session_id,
-                chapter=request.chapter,
-                user_preferences=user_preferences,
-            ):
-                yield chunk
+        if request.stream:
+            # Return streaming response
+            async def generate():
+                async for chunk in chat_service.chat_stream(
+                    query=request.message,
+                    session_id=request.session_id,
+                    chapter=request.chapter,
+                    user_preferences=user_preferences,
+                ):
+                    yield chunk
 
-        return StreamingResponse(
-            generate(),
-            media_type="text/plain",
+            return StreamingResponse(
+                generate(),
+                media_type="text/plain",
+            )
+
+        # Non-streaming response
+        response = chat_service.chat(
+            query=request.message,
+            session_id=request.session_id,
+            chapter=request.chapter,
+            user_preferences=user_preferences,
         )
 
-    # Non-streaming response
-    response = chat_service.chat(
-        query=request.message,
-        session_id=request.session_id,
-        chapter=request.chapter,
-        user_preferences=user_preferences,
-    )
-
-    return ChatResponse(
-        message=response.message,
-        sources=[
-            ChatSource(
-                chapter=s.get("chapter", ""),
-                section=s.get("section", ""),
-                score=s.get("score", 0.0),
-                content=s.get("content"),
-            )
-            for s in response.sources
-        ],
-        session_id=response.session_id,
-        tokens_used=response.tokens_used,
-    )
+        return ChatResponse(
+            message=response.message,
+            sources=[
+                ChatSource(
+                    chapter=s.get("chapter", ""),
+                    section=s.get("section", ""),
+                    score=s.get("score", 0.0),
+                    content=s.get("content"),
+                )
+                for s in response.sources
+            ],
+            session_id=response.session_id,
+            tokens_used=response.tokens_used,
+        )
+    except Exception as e:
+        # Log the error and return a helpful message
+        import traceback
+        error_detail = f"{type(e).__name__}: {str(e)}"
+        print(f"Chat error: {error_detail}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chat service error: {error_detail}. Please check server logs for details."
+        )
 
 
 @router.post("/stream")
