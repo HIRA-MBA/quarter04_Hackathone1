@@ -175,7 +175,7 @@ async def send_message(
         raise HTTPException(
             status_code=500,
             detail=f"Chat service error: {error_detail}. Please check server logs for details."
-        )
+        ) from e
 
 
 @router.post("/stream")
