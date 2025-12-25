@@ -304,19 +304,57 @@ async def get_current_user_info(
     )
 
 
-# OAuth routes (placeholders for Google/GitHub)
+# OAuth routes
 @router.get("/oauth/{provider}")
-async def oauth_redirect(provider: str) -> MessageResponse:
-    """Redirect to OAuth provider for authentication."""
+async def oauth_redirect(provider: str) -> OAuthUrlResponse:
+    """Get OAuth redirect URL for the specified provider."""
+    import secrets
+
     if provider not in ("google", "github"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Unsupported OAuth provider",
         )
 
-    # In production, redirect to OAuth provider
-    # This is a placeholder that would be implemented with actual OAuth flow
-    return MessageResponse(message=f"OAuth with {provider} - redirect URL would be generated here")
+    # Generate state for CSRF protection
+    state = secrets.token_urlsafe(32)
+    oauth_states[state] = provider
+
+    if provider == "github":
+        if not settings.github_client_id:
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail="GitHub OAuth not configured. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.",
+            )
+        # GitHub OAuth URL
+        redirect_uri = settings.github_redirect_uri
+        url = (
+            f"https://github.com/login/oauth/authorize"
+            f"?client_id={settings.github_client_id}"
+            f"&redirect_uri={redirect_uri}"
+            f"&scope=user:email"
+            f"&state={state}"
+        )
+    elif provider == "google":
+        if not settings.google_client_id:
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail="Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.",
+            )
+        # Google OAuth URL
+        redirect_uri = settings.google_redirect_uri
+        url = (
+            f"https://accounts.google.com/o/oauth2/v2/auth"
+            f"?client_id={settings.google_client_id}"
+            f"&redirect_uri={redirect_uri}"
+            f"&response_type=code"
+            f"&scope=email%20profile"
+            f"&state={state}"
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported provider")
+
+    return OAuthUrlResponse(url=url, state=state)
 
 
 @router.get("/status")
@@ -345,20 +383,177 @@ async def auth_status() -> dict:
 
 @router.get("/oauth/{provider}/callback")
 async def oauth_callback(
+    request: Request,
     provider: str,
     code: str,
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    state: str | None = None,
+    auth_service: Annotated[AuthService, Depends(get_auth_service)] = None,
 ) -> TokenResponse:
     """Handle OAuth callback from provider."""
+    import httpx
+
     if provider not in ("google", "github"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Unsupported OAuth provider",
         )
 
-    # In production, exchange code for tokens and get user info
-    # This is a placeholder implementation
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="OAuth callback handling not yet implemented",
+    # Verify state (CSRF protection)
+    if state and state in oauth_states:
+        del oauth_states[state]
+    # Note: In production, you should strictly verify state
+
+    if provider == "github":
+        # Exchange code for access token
+        async with httpx.AsyncClient() as client:
+            token_response = await client.post(
+                "https://github.com/login/oauth/access_token",
+                data={
+                    "client_id": settings.github_client_id,
+                    "client_secret": settings.github_client_secret,
+                    "code": code,
+                    "redirect_uri": settings.github_redirect_uri,
+                },
+                headers={"Accept": "application/json"},
+            )
+
+            if token_response.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to exchange code for token",
+                )
+
+            token_data = token_response.json()
+            access_token = token_data.get("access_token")
+
+            if not access_token:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"No access token received: {token_data.get('error_description', 'Unknown error')}",
+                )
+
+            # Get user info from GitHub
+            user_response = await client.get(
+                "https://api.github.com/user",
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "Accept": "application/json",
+                },
+            )
+
+            if user_response.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to get user info from GitHub",
+                )
+
+            github_user = user_response.json()
+
+            # Get user's email (may need separate call if email is private)
+            email = github_user.get("email")
+            if not email:
+                emails_response = await client.get(
+                    "https://api.github.com/user/emails",
+                    headers={
+                        "Authorization": f"Bearer {access_token}",
+                        "Accept": "application/json",
+                    },
+                )
+                if emails_response.status_code == 200:
+                    emails = emails_response.json()
+                    # Get primary email
+                    for e in emails:
+                        if e.get("primary"):
+                            email = e.get("email")
+                            break
+                    if not email and emails:
+                        email = emails[0].get("email")
+
+            if not email:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Could not get email from GitHub. Please make sure your email is public or grant email permission.",
+                )
+
+            full_name = github_user.get("name") or github_user.get("login")
+            oauth_id = str(github_user.get("id"))
+
+    elif provider == "google":
+        # Exchange code for access token
+        async with httpx.AsyncClient() as client:
+            token_response = await client.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "client_id": settings.google_client_id,
+                    "client_secret": settings.google_client_secret,
+                    "code": code,
+                    "redirect_uri": settings.google_redirect_uri,
+                    "grant_type": "authorization_code",
+                },
+            )
+
+            if token_response.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to exchange code for token",
+                )
+
+            token_data = token_response.json()
+            access_token = token_data.get("access_token")
+
+            # Get user info from Google
+            user_response = await client.get(
+                "https://www.googleapis.com/oauth2/v2/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+
+            if user_response.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to get user info from Google",
+                )
+
+            google_user = user_response.json()
+            email = google_user.get("email")
+            full_name = google_user.get("name")
+            oauth_id = google_user.get("id")
+
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported provider")
+
+    # Check if user exists
+    existing_user = await auth_service.get_user_by_email(email)
+
+    if existing_user:
+        # User exists - log them in
+        user = existing_user
+        # Update OAuth info if not set
+        if not existing_user.oauth_provider:
+            existing_user.oauth_provider = provider
+            existing_user.oauth_id = oauth_id
+            await auth_service.db.commit()
+    else:
+        # Create new user
+        user = await auth_service.create_oauth_user(
+            email=email,
+            full_name=full_name,
+            oauth_provider=provider,
+            oauth_id=oauth_id,
+        )
+
+    # Create tokens
+    jwt_access_token = auth_service.create_access_token({"sub": str(user.id)})
+    refresh_token = auth_service.create_refresh_token({"sub": str(user.id)})
+
+    # Create session
+    await auth_service.create_session(
+        user_id=user.id,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
+
+    return TokenResponse(
+        access_token=jwt_access_token,
+        refresh_token=refresh_token,
+        expires_in=30 * 60,
     )
