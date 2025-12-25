@@ -322,8 +322,9 @@ async def oauth_redirect(provider: str) -> MessageResponse:
 @router.get("/status")
 async def auth_status() -> dict:
     """Check auth service status and database connectivity."""
-    from app.db.postgres import get_session_maker
     from sqlalchemy import text
+
+    from app.db.postgres import get_session_maker
 
     result = {
         "auth_service": "ok",
