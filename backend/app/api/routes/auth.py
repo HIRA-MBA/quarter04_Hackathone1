@@ -139,13 +139,17 @@ async def signup(
         full_name=body.full_name,
     )
 
-    # Send verification email
-    verification_token = auth_service.create_verification_token(user.id)
-    await EmailService.send_verification_email(
-        to_email=user.email,
-        token=verification_token,
-        full_name=user.full_name,
-    )
+    # Send verification email (don't block signup if email fails)
+    try:
+        verification_token = auth_service.create_verification_token(user.id)
+        await EmailService.send_verification_email(
+            to_email=user.email,
+            token=verification_token,
+            full_name=user.full_name,
+        )
+    except Exception as e:
+        # Log but don't fail signup - user can request verification email later
+        print(f"Failed to send verification email: {e}")
 
     # Create tokens
     access_token = auth_service.create_access_token({"sub": str(user.id)})
@@ -313,6 +317,29 @@ async def oauth_redirect(provider: str) -> MessageResponse:
     # In production, redirect to OAuth provider
     # This is a placeholder that would be implemented with actual OAuth flow
     return MessageResponse(message=f"OAuth with {provider} - redirect URL would be generated here")
+
+
+@router.get("/status")
+async def auth_status() -> dict:
+    """Check auth service status and database connectivity."""
+    from app.db.postgres import get_session_maker
+    from sqlalchemy import text
+
+    result = {
+        "auth_service": "ok",
+        "database": "unknown",
+        "email_configured": EmailService.is_configured(),
+    }
+
+    try:
+        session_maker = get_session_maker()
+        async with session_maker() as session:
+            await session.execute(text("SELECT 1"))
+        result["database"] = "ok"
+    except Exception as e:
+        result["database"] = f"error: {type(e).__name__}: {str(e)}"
+
+    return result
 
 
 @router.get("/oauth/{provider}/callback")
