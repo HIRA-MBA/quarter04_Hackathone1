@@ -37,13 +37,18 @@ class Settings(BaseSettings):
     translation_provider: str = Field(default="openai")  # "openai" or "claude"
 
     # CORS
+    # Note: FastAPI CORSMiddleware does NOT support wildcards like "https://*.vercel.app"
+    # Use exact origins or set CORS_ORIGINS env var with comma-separated values
+    # Set CORS_ORIGINS="*" to allow all origins (for development/testing)
     cors_origins: list[str] = Field(
         default=[
             "http://localhost:3000",
+            "http://localhost:5173",
             "https://quarter04-hackathone1.vercel.app",
-            "https://*.vercel.app",
         ]
     )
+    # Allow all origins flag - set CORS_ALLOW_ALL=true for permissive CORS
+    cors_allow_all: bool = Field(default=True)
 
     # Authentication
     auth_enabled: bool = False
