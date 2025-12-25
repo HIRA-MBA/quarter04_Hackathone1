@@ -9,7 +9,12 @@
       "Bash(curl:*)",
       "Bash(powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json -PathsOnly)",
       "Bash(powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json)",
-      "Bash(git push origin main)"
+      "Bash(git push origin main)",
+      "Bash(node scripts/optimize-images.js:*)",
+      "Bash(python -m ruff format:*)",
+      "Bash(python -m ruff:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

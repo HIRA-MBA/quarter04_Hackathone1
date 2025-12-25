@@ -7,10 +7,17 @@
  *
  * Usage:
  *   node scripts/optimize-images.js          # Analyze only
- *   node scripts/optimize-images.js --fix    # Optimize images
+ *   node scripts/optimize-images.js --fix    # Optimize images (requires sharp)
+ *   node scripts/optimize-images.js --webp   # Generate WebP versions only
  *
  * Prerequisites:
  *   npm install sharp glob
+ *
+ * What this script does in --fix mode:
+ *   1. Compresses PNG/JPG images to reduce file size
+ *   2. Generates WebP versions for better compression
+ *   3. Resizes oversized images to max 2000px dimension
+ *   4. Preserves original files in .backup/ directory
  */
 
 const fs = require('fs');
@@ -20,8 +27,12 @@ const glob = require('glob');
 // Configuration
 const STATIC_DIR = path.join(__dirname, '..', 'static');
 const DOCS_DIR = path.join(__dirname, '..', 'docs');
+const BACKUP_DIR = path.join(__dirname, '..', '.image-backup');
 const MAX_FILE_SIZE = 500 * 1024; // 500KB max for images
 const MAX_DIMENSION = 2000; // Max width/height
+const JPEG_QUALITY = 85;
+const PNG_COMPRESSION = 9;
+const WEBP_QUALITY = 80;
 const RECOMMENDED_FORMATS = ['webp', 'avif'];
 
 const results = {
@@ -225,26 +236,195 @@ Docusaurus configuration for responsive images:
 }
 
 /**
- * Main function
+ * Optimize a single image with sharp
  */
-function main() {
-  const args = process.argv.slice(2);
-  const shouldFix = args.includes('--fix');
+async function optimizeImage(filepath, sharp) {
+  const ext = path.extname(filepath).toLowerCase();
+  const stats = fs.statSync(filepath);
+  const relativePath = path.relative(path.join(__dirname, '..'), filepath);
 
-  if (shouldFix) {
-    console.log('Note: --fix mode requires the "sharp" package.');
-    console.log('Install with: npm install sharp\n');
+  // Create backup
+  const backupPath = path.join(BACKUP_DIR, relativePath);
+  const backupDir = path.dirname(backupPath);
+  if (!fs.existsSync(backupDir)) {
+    fs.mkdirSync(backupDir, { recursive: true });
+  }
+  if (!fs.existsSync(backupPath)) {
+    fs.copyFileSync(filepath, backupPath);
+  }
 
-    try {
-      require.resolve('sharp');
-    } catch (e) {
-      console.log('Sharp not installed. Running in analyze-only mode.\n');
+  let optimized = false;
+  let savedBytes = 0;
+
+  try {
+    const image = sharp(filepath);
+    const metadata = await image.metadata();
+
+    // Resize if too large
+    let pipeline = image;
+    if (metadata.width > MAX_DIMENSION || metadata.height > MAX_DIMENSION) {
+      pipeline = pipeline.resize(MAX_DIMENSION, MAX_DIMENSION, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
+    }
+
+    // Optimize based on format
+    if (ext === '.jpg' || ext === '.jpeg') {
+      await pipeline
+        .jpeg({ quality: JPEG_QUALITY, progressive: true })
+        .toFile(filepath + '.tmp');
+    } else if (ext === '.png') {
+      await pipeline
+        .png({ compressionLevel: PNG_COMPRESSION, progressive: true })
+        .toFile(filepath + '.tmp');
+    }
+
+    // Replace original if smaller
+    if (fs.existsSync(filepath + '.tmp')) {
+      const newStats = fs.statSync(filepath + '.tmp');
+      if (newStats.size < stats.size) {
+        fs.unlinkSync(filepath);
+        fs.renameSync(filepath + '.tmp', filepath);
+        savedBytes = stats.size - newStats.size;
+        optimized = true;
+      } else {
+        fs.unlinkSync(filepath + '.tmp');
+      }
+    }
+
+    // Generate WebP version
+    const webpPath = filepath.replace(/\.(png|jpe?g)$/i, '.webp');
+    if (!fs.existsSync(webpPath)) {
+      await sharp(filepath)
+        .webp({ quality: WEBP_QUALITY })
+        .toFile(webpPath);
+      console.log(`  Created WebP: ${path.relative(path.join(__dirname, '..'), webpPath)}`);
+    }
+  } catch (err) {
+    console.error(`  Error optimizing ${relativePath}: ${err.message}`);
+  }
+
+  return { optimized, savedBytes };
+}
+
+/**
+ * Run optimization on all images
+ */
+async function runOptimization() {
+  let sharp;
+  try {
+    sharp = require('sharp');
+  } catch (e) {
+    console.error('Error: sharp is required for optimization.');
+    console.error('Install with: npm install sharp');
+    process.exit(1);
+  }
+
+  console.log('Starting image optimization...\n');
+
+  const imagePatterns = ['**/*.{png,jpg,jpeg}'];
+  const searchDirs = [STATIC_DIR, DOCS_DIR];
+  let totalSaved = 0;
+  let optimizedCount = 0;
+
+  for (const dir of searchDirs) {
+    if (!fs.existsSync(dir)) continue;
+
+    for (const pattern of imagePatterns) {
+      const files = glob.sync(pattern, { cwd: dir, absolute: true });
+
+      for (const file of files) {
+        const relativePath = path.relative(path.join(__dirname, '..'), file);
+        console.log(`Processing: ${relativePath}`);
+
+        const result = await optimizeImage(file, sharp);
+        if (result.optimized) {
+          optimizedCount++;
+          totalSaved += result.savedBytes;
+          console.log(`  Saved: ${formatBytes(result.savedBytes)}`);
+        }
+      }
     }
   }
 
+  console.log('\n' + '='.repeat(60));
+  console.log('OPTIMIZATION COMPLETE');
+  console.log('='.repeat(60));
+  console.log(`Images optimized: ${optimizedCount}`);
+  console.log(`Total space saved: ${formatBytes(totalSaved)}`);
+  console.log(`Backups stored in: ${BACKUP_DIR}`);
+}
+
+/**
+ * Generate WebP versions only
+ */
+async function generateWebPOnly() {
+  let sharp;
+  try {
+    sharp = require('sharp');
+  } catch (e) {
+    console.error('Error: sharp is required for WebP generation.');
+    console.error('Install with: npm install sharp');
+    process.exit(1);
+  }
+
+  console.log('Generating WebP versions...\n');
+
+  const imagePatterns = ['**/*.{png,jpg,jpeg}'];
+  const searchDirs = [STATIC_DIR, DOCS_DIR];
+  let generated = 0;
+
+  for (const dir of searchDirs) {
+    if (!fs.existsSync(dir)) continue;
+
+    for (const pattern of imagePatterns) {
+      const files = glob.sync(pattern, { cwd: dir, absolute: true });
+
+      for (const file of files) {
+        const webpPath = file.replace(/\.(png|jpe?g)$/i, '.webp');
+        if (fs.existsSync(webpPath)) continue;
+
+        try {
+          await sharp(file)
+            .webp({ quality: WEBP_QUALITY })
+            .toFile(webpPath);
+
+          const relativePath = path.relative(path.join(__dirname, '..'), webpPath);
+          console.log(`Created: ${relativePath}`);
+          generated++;
+        } catch (err) {
+          console.error(`Error processing ${file}: ${err.message}`);
+        }
+      }
+    }
+  }
+
+  console.log(`\nGenerated ${generated} WebP images`);
+}
+
+/**
+ * Main function
+ */
+async function main() {
+  const args = process.argv.slice(2);
+  const shouldFix = args.includes('--fix');
+  const webpOnly = args.includes('--webp');
+
+  if (webpOnly) {
+    await generateWebPOnly();
+    return;
+  }
+
+  if (shouldFix) {
+    await runOptimization();
+    return;
+  }
+
+  // Default: analyze only
   analyzeImages();
   const exitCode = generateReport();
   process.exit(exitCode);
 }
 
-main();
+main().catch(console.error);

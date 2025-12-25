@@ -3,8 +3,7 @@
  */
 
 import { authApi } from './auth';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import { getApiUrl } from './config';
 
 export type ProficiencyLevel = 'none' | 'beginner' | 'intermediate' | 'advanced';
 
@@ -74,10 +73,8 @@ export interface DifficultyAdjustment {
 }
 
 class UserApiClient {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
+  private get baseUrl(): string {
+    return getApiUrl();
   }
 
   /**

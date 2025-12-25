@@ -21,7 +21,10 @@
     "validate:links": "node scripts/validate-links.js",
     "audit:accessibility": "node scripts/audit-accessibility.js",
     "optimize:images": "node scripts/optimize-images.js",
-    "validate:all": "npm run validate:content && npm run validate:links && npm run audit:accessibility"
+    "validate:all": "npm run validate:content && npm run validate:links && npm run audit:accessibility",
+    "optimize:images:analyze": "node scripts/optimize-images.js",
+    "optimize:images:fix": "node scripts/optimize-images.js --fix",
+    "optimize:images:webp": "node scripts/optimize-images.js --webp"
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",
