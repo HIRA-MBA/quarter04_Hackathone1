@@ -247,10 +247,53 @@ class AuthApiClient {
   }
 
   /**
-   * Get OAuth redirect URL.
+   * Get OAuth redirect URL from backend and redirect user.
    */
   getOAuthUrl(provider: 'google' | 'github'): string {
+    // This returns the API endpoint - the actual redirect happens via the backend
     return `${this.baseUrl}/api/auth/oauth/${provider}`;
+  }
+
+  /**
+   * Initiate OAuth flow - fetches the OAuth URL and redirects.
+   */
+  async initiateOAuth(provider: 'google' | 'github'): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/api/auth/oauth/${provider}`);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'OAuth not configured' }));
+      throw new Error(error.detail || 'Failed to initiate OAuth');
+    }
+
+    const data = await response.json();
+    // Redirect to the OAuth provider
+    window.location.href = data.url;
+  }
+
+  /**
+   * Handle OAuth callback - extract tokens from URL params.
+   */
+  handleOAuthCallback(): { accessToken: string; refreshToken: string } | null {
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const error = params.get('error');
+
+    if (error) {
+      throw new Error(error);
+    }
+
+    if (accessToken && refreshToken) {
+      this.storeTokens({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        token_type: 'bearer',
+        expires_in: 1800,
+      });
+      return { accessToken, refreshToken };
+    }
+
+    return null;
   }
 }
 

@@ -388,7 +388,7 @@ async def oauth_callback(
     code: str,
     state: str | None = None,
     auth_service: Annotated[AuthService, Depends(get_auth_service)] = None,
-) -> TokenResponse:
+):
     """Handle OAuth callback from provider."""
     import httpx
 
@@ -552,8 +552,16 @@ async def oauth_callback(
         user_agent=request.headers.get("user-agent"),
     )
 
-    return TokenResponse(
-        access_token=jwt_access_token,
-        refresh_token=refresh_token,
-        expires_in=30 * 60,
-    )
+    # Redirect to frontend with tokens
+    from urllib.parse import urlencode
+
+    from fastapi.responses import RedirectResponse
+
+    frontend_url = settings.frontend_url
+    params = urlencode({
+        "access_token": jwt_access_token,
+        "refresh_token": refresh_token,
+    })
+    redirect_url = f"{frontend_url}/auth/callback?{params}"
+
+    return RedirectResponse(url=redirect_url)
