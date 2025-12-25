@@ -169,12 +169,13 @@ async def send_message(
     except Exception as e:
         # Log the error and return a helpful message
         import traceback
+
         error_detail = f"{type(e).__name__}: {str(e)}"
         print(f"Chat error: {error_detail}")
         print(traceback.format_exc())
         raise HTTPException(
             status_code=500,
-            detail=f"Chat service error: {error_detail}. Please check server logs for details."
+            detail=f"Chat service error: {error_detail}. Please check server logs for details.",
         ) from e
 
 
