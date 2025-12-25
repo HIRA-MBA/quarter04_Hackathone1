@@ -285,6 +285,64 @@ async def get_stats(
     return CollectionStatsResponse(**stats)
 
 
+@router.get("/diagnostic")
+async def diagnostic():
+    """
+    Diagnostic endpoint to check service configuration.
+    Returns status of OpenAI, Qdrant, and other dependencies.
+    """
+    from app.config import get_settings
+
+    settings = get_settings()
+    results = {
+        "openai": {"status": "unknown", "model": settings.chat_model},
+        "qdrant": {"status": "unknown", "collection": settings.qdrant_collection},
+        "config": {
+            "debug": settings.debug,
+            "embedding_model": settings.embedding_model,
+            "chat_model": settings.chat_model,
+        },
+    }
+
+    # Check OpenAI API key
+    openai_key = settings.openai_api_key
+    if not openai_key:
+        results["openai"]["status"] = "error"
+        results["openai"]["error"] = "OPENAI_API_KEY not set"
+    elif len(openai_key) < 20:
+        results["openai"]["status"] = "error"
+        results["openai"]["error"] = "OPENAI_API_KEY appears invalid (too short)"
+    else:
+        # Test OpenAI connection
+        try:
+            from openai import OpenAI
+
+            client = OpenAI(api_key=openai_key)
+            # Just list models to verify key works
+            models = client.models.list()
+            model_ids = [m.id for m in models.data[:5]]
+            results["openai"]["status"] = "ok"
+            results["openai"]["key_prefix"] = openai_key[:8] + "..."
+            results["openai"]["sample_models"] = model_ids
+        except Exception as e:
+            results["openai"]["status"] = "error"
+            results["openai"]["error"] = f"{type(e).__name__}: {str(e)}"
+
+    # Check Qdrant connection
+    try:
+        from app.db.qdrant import get_qdrant_client
+
+        qdrant = get_qdrant_client()
+        collections = qdrant.get_collections()
+        results["qdrant"]["status"] = "ok"
+        results["qdrant"]["collections"] = [c.name for c in collections.collections]
+    except Exception as e:
+        results["qdrant"]["status"] = "error"
+        results["qdrant"]["error"] = f"{type(e).__name__}: {str(e)}"
+
+    return results
+
+
 @router.get("/search")
 async def search_content(
     q: Annotated[str, Query(..., min_length=1, max_length=500, description="Search query")],
