@@ -4,8 +4,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,7 +15,6 @@ from app.models.session import Session
 from app.models.user import User
 
 settings = get_settings()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class AuthService:
@@ -25,23 +24,17 @@ class AuthService:
         self.db = db
 
     @staticmethod
-    def _truncate_password(password: str) -> str:
-        """Truncate password to 72 bytes for bcrypt compatibility."""
-        # bcrypt has a 72-byte limit, encode and truncate safely
-        password_bytes = password.encode("utf-8")[:72]
-        return password_bytes.decode("utf-8", errors="ignore")
-
-    @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         """Verify a password against its hash."""
-        truncated = AuthService._truncate_password(plain_password)
-        return pwd_context.verify(truncated, hashed_password)
+        password_bytes = plain_password.encode("utf-8")[:72]
+        return bcrypt.checkpw(password_bytes, hashed_password.encode("utf-8"))
 
     @staticmethod
     def get_password_hash(password: str) -> str:
         """Hash a password."""
-        truncated = AuthService._truncate_password(password)
-        return pwd_context.hash(truncated)
+        password_bytes = password.encode("utf-8")[:72]
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(password_bytes, salt).decode("utf-8")
 
     @staticmethod
     def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
