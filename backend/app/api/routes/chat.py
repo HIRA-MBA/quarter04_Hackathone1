@@ -286,6 +286,46 @@ async def get_stats(
     return CollectionStatsResponse(**stats)
 
 
+@router.post("/test")
+async def test_chat_simple(request: ChatRequest):
+    """
+    Simple test endpoint that bypasses database dependency.
+    Use this to test if the core chat functionality works.
+    """
+    try:
+        chat_service = get_chat_svc()
+        response = chat_service.chat(
+            query=request.message,
+            session_id=request.session_id,
+            chapter=request.chapter,
+            user_preferences=None,
+        )
+        return ChatResponse(
+            message=response.message,
+            sources=[
+                ChatSource(
+                    chapter=s.get("chapter", ""),
+                    section=s.get("section", ""),
+                    score=s.get("score", 0.0),
+                    content=s.get("content"),
+                )
+                for s in response.sources
+            ],
+            session_id=response.session_id,
+            tokens_used=response.tokens_used,
+        )
+    except Exception as e:
+        import traceback
+
+        error_detail = f"{type(e).__name__}: {str(e)}"
+        print(f"Test chat error: {error_detail}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=error_detail,
+        ) from e
+
+
 @router.get("/diagnostic")
 async def diagnostic():
     """
